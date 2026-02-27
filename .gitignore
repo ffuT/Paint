@@ -1,0 +1,6 @@
+Build/*
+bin/*
+.vscode/
+imgui.ini
+compile_commands.json
+.cache/*
