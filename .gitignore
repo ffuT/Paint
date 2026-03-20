@@ -1,6 +1,9 @@
 Build/*
 bin/*
-.vscode/
-imgui.ini
-compile_commands.json
 .cache/*
+
+.vscode/
+compile_commands.json
+
+# bashscript to build and run for me
+run 
