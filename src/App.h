@@ -11,7 +11,6 @@ class App{
     
     int initialize();
     void start();
-
     
     void setWindowBounds(int, int);
     void setFrameBounds(int, int);

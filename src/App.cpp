@@ -5,9 +5,9 @@
 namespace Color {
     constexpr unsigned int White = 0xffffffff;
     constexpr unsigned int Black = 0xff000000;
-    constexpr unsigned int Red = 0xff000000;
-    constexpr unsigned int Green = 0xff000000;
-    constexpr unsigned int Blue = 0xff000000;
+    constexpr unsigned int Red = 0xff0000ff;
+    constexpr unsigned int Green = 0xff00ff00;
+    constexpr unsigned int Blue = 0xffff0000;
 };
 
 void framebufferSizeCallback(GLFWwindow* window, int w, int h) {
@@ -16,13 +16,14 @@ void framebufferSizeCallback(GLFWwindow* window, int w, int h) {
     app->setFrameBounds(w, h);
     glViewport(0, 0, w, h);
 
-    printf("resized to %dx%d \n", w, h);
+    printf("resized canvas to %dx%d \n", w, h);
 }
 
 void windowResizeCallback(GLFWwindow* window, int w, int h){
     App* app = (App*) glfwGetWindowUserPointer(window);
     if(!app) return;
     app->setWindowBounds(w, h);
+    printf("resized window to %dx%d \n", w, h);
 }
 
 void curserMoveCallback(GLFWwindow* window, double x, double y){
@@ -49,12 +50,6 @@ void keyPressCallback(GLFWwindow* window, int key, int scancode, int action, int
     
     App* app = (App*) glfwGetWindowUserPointer(window);
     if(!app) return;
-
-    switch (key) {
-        case GLFW_KEY_F :
-            framebufferSizeCallback(window,600, 800);
-            break;
-    }
 }
 
 App::App() : m_canvasWidth(800), m_canvasHeight(600) {
@@ -129,7 +124,8 @@ int App::initialize(){
         return -1;
     }
     glfwMakeContextCurrent(m_window);
-    
+
+    glfwSetWindowTitle(m_window, "Paint");
     
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         printf("Failed to initialize GLAD\n");
@@ -145,12 +141,12 @@ int App::initialize(){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     
-    glViewport(0, 0, m_width, m_height);
+    glViewport(0, 0, m_canvasWidth, m_canvasHeight);
     
     //callbacks
     glfwSetWindowUserPointer(m_window, this);
     glfwSetCursorPosCallback(m_window, curserMoveCallback);
-    glfwSetFramebufferSizeCallback(m_window, framebufferSizeCallback);
+    //glfwSetFramebufferSizeCallback(m_window, framebufferSizeCallback); // disable to lock canvas
     glfwSetWindowSizeCallback(m_window, windowResizeCallback);
     glfwSetKeyCallback(m_window, keyPressCallback);
     glfwSetMouseButtonCallback(m_window, mouseClickCallback);
@@ -160,9 +156,13 @@ int App::initialize(){
 void App::draw(){
     if(!m_mouseLeftDown) return;
 
-    int cx = m_mouseX;
-    int cy = m_mouseY;
+    float sx, sy;
+    glfwGetWindowContentScale(m_window, &sx,&sy);
+
+    int cx = m_mouseX * sx;
+    int cy = m_mouseY * sy;
     int r = m_toolRadius;
+    printf("draw: %d %d\n", cx, cy);
 
     // cirlce fill
     for(int y = cy-r; y <= cy+r; y++){
@@ -171,8 +171,9 @@ void App::draw(){
                 continue;   
             int dx = x - cx;
             int dy = y - cy;
-            if(dx*dx + dy*dy <= r*r) 
-                pixels[y * m_width + x] = Color::Black;
+            if(dx*dx + dy*dy <= r*r){
+                pixels[y * m_canvasWidth + x] = Color::Black;
+            }
         }
     }
     // TODO more
@@ -180,12 +181,11 @@ void App::draw(){
 
 void App::render(){
     glBindTexture(GL_TEXTURE_2D, m_tex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_canvasWidth, m_canvasHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     
     glUseProgram(m_shader);
     glBindVertexArray(m_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    
 }
 
 void App::createVAO(){
