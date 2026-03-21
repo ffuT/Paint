@@ -1,0 +1,1 @@
+only used for windows. On linux install glfw 'sudo pacman -S glfw'

@@ -21,10 +21,10 @@ project "Paint"
 
     files { "src/vendor/glad/src/glad.c", "src/**.hpp", "src/**.h", "src/**.cpp" }
 
-    includedirs { "src/**", "src/vendor/**" }
+    includedirs { "src/**", "Dependencies/glfw/include", "src/vendor/**" }
 
     filter "system:windows"                             
-        libdirs { "Dependencies/glfw/lib-vc2022", "Dependencies/glew/lib/Release/x64" }
+        libdirs { "Dependencies/glfw/lib-vc2022" }
         links { "glfw3", "opengl32" }
 
     filter "system:linux"

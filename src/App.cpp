@@ -146,7 +146,7 @@ int App::initialize(){
     //callbacks
     glfwSetWindowUserPointer(m_window, this);
     glfwSetCursorPosCallback(m_window, curserMoveCallback);
-    //glfwSetFramebufferSizeCallback(m_window, framebufferSizeCallback); // disable to lock canvas
+    glfwSetFramebufferSizeCallback(m_window, framebufferSizeCallback); // disable to lock canvas
     glfwSetWindowSizeCallback(m_window, windowResizeCallback);
     glfwSetKeyCallback(m_window, keyPressCallback);
     glfwSetMouseButtonCallback(m_window, mouseClickCallback);
