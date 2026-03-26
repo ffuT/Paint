@@ -1,6 +1,7 @@
 #include "App.h"
 #include <GLFW/glfw3.h>
 #include <cstdio>
+#include <math.h>
 
 namespace Color {
     // unsigned int color = AABBGGRR

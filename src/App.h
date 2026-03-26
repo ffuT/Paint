@@ -2,7 +2,6 @@
 
 #include <glad.h>
 #include <GLFW/glfw3.h>
-#include <glm.hpp>
 
 struct vec2f{
     float x;
