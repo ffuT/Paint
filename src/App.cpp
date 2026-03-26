@@ -38,11 +38,7 @@ void mouseClickCallback(GLFWwindow* window, int button, int action, int mods){
     if(!app) return;
     int x = app->getMouseX();
     int y = app->getMouseY();
-    switch (button) {
-        case GLFW_MOUSE_BUTTON_LEFT:
-            app->setMouseDown(action == GLFW_PRESS);
-            break;
-    }
+    app->setMouseDown(button, action == GLFW_PRESS);
     printf("mouse click %d x:%d y:%d\n", button, x, y);        
 }
 
@@ -53,7 +49,9 @@ void keyPressCallback(GLFWwindow* window, int key, int scancode, int action, int
     if(!app) return;
 }
 
-App::App() : m_canvasWidth(800), m_canvasHeight(600) {
+App::App() : m_canvasWidth(1200), m_canvasHeight(800) {
+    m_scale.x = 1.0f;
+    m_scale.y = 1.0f;
     m_width = m_canvasWidth;
     m_height = m_canvasHeight;
     pixels = new unsigned int[m_canvasWidth * m_canvasHeight];
@@ -79,13 +77,21 @@ void App::setFrameBounds(int w, int h){
     m_canvasHeight = h;
 }
 
-void App::setMouseDown(bool in){
-    m_mouseLeftDown = in;
+void App::setMouseDown(int button, bool in){
+    switch (button) {
+    case GLFW_MOUSE_BUTTON_LEFT:
+        m_mouseLeftDown = in;
+        break;
+    case GLFW_MOUSE_BUTTON_RIGHT:
+        m_mouseRightDown = in;
+        m_drag = m_mouse;
+        break;
+    }
 }
 
 void App::setMousePos(double x, double y){
-    m_mouseX = x;
-    m_mouseY = y;
+    m_mouse.x = x;
+    m_mouse.y = y;
 }
 
 void App::start(){
@@ -96,12 +102,13 @@ void App::start(){
         glClear(GL_COLOR_BUFFER_BIT);
         
         // get window scale from system
-        glfwGetWindowContentScale(m_window, &m_sx,&m_sy);
+        glfwGetWindowContentScale(m_window, &m_scale.x,&m_scale.y);
    
         // canvas offset pos in on screen:
-        m_canvasOffsetWidth = m_sx*m_width/2 - (float) m_canvasWidth/2;
-        m_canvasOffsetHeight = m_sy*m_height/2 - (float) m_canvasHeight/2;
+        m_canvasOffsetWidth = m_scale.x*m_width/2 - (float) m_canvasWidth/2;
+        m_canvasOffsetHeight = m_scale.y*m_height/2 - (float) m_canvasHeight/2;
 
+        drag();
         draw();
         render();
 
@@ -162,34 +169,64 @@ int App::initialize(){
     return 0;
 }
 
+void App::drag(){
+    if(!m_mouseRightDown) return;
+    float dx = m_drag.x - m_mouse.x;
+    float dy = m_drag.y - m_mouse.y;
+
+    m_draggedOffset.x -= dx;
+    m_draggedOffset.y += dy;
+    m_drag.x -= dx;
+    m_drag.y -= dy;
+}
+
 void App::draw(){
-    if(!m_mouseLeftDown) return;
+    int cx = m_mouse.x * m_scale.x - m_canvasOffsetWidth - m_draggedOffset.x;
+    int cy = m_mouse.y * m_scale.y - m_canvasOffsetHeight + m_draggedOffset.y;
+    static int prevCx = cx;
+    static int prevCy = cy;
 
-    int cx = m_mouseX * m_sx - m_canvasOffsetWidth;
-    int cy = m_mouseY * m_sy - m_canvasOffsetHeight;
+    if(!m_mouseLeftDown){
+        //if not click set prev click to current
+        prevCx = cx;
+        prevCy = cy;
+        return;
+    }
+
+    // simple interp between prevc and currentc
+    float dx = cx - prevCx, dy = cy - prevCy;
+    float dist = std::sqrt(dx*dx+dy*dy);
+    int steps = std::max(1, (int)std::ceil(dist));
+    for (int i = 0; i <= steps; i++) {
+        float t = (float) i/steps;
+        stampCircle(prevCx + t * dx, prevCy + t *dy);
+        // TODO more stamps
+    }
+
+    prevCx = cx;
+    prevCy = cy;
+}
+
+void App::stampCircle(int cx, int cy){
     int r = m_toolRadius;
-    //printf("draw: %d %d\n", cx, cy);
-
-    // cirlce fill
     for(int y = cy-r; y <= cy+r; y++){
         for(int x = cx-r; x <= cx+r; x++){
             if(x < 0 || x >= m_canvasWidth || y < 0 || y >= m_canvasHeight)
                 continue;   
-            int dx = x - cx;
-            int dy = y - cy;
+            int dx = (x - cx);
+            int dy = (y - cy);
             if(dx*dx + dy*dy <= r*r){
                 pixels[y * m_canvasWidth + x] = Color::Black;
             }
         }
     }
-    // TODO more
 }
 
 void App::render(){
     glBindTexture(GL_TEXTURE_2D, m_tex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_canvasWidth, m_canvasHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     
-    glViewport(m_canvasOffsetWidth,m_canvasOffsetHeight, m_canvasWidth, m_canvasHeight);
+    glViewport(m_canvasOffsetWidth + m_draggedOffset.x,m_canvasOffsetHeight + m_draggedOffset.y, m_canvasWidth, m_canvasHeight);
 
     glUseProgram(m_shader);
     glBindVertexArray(m_vao);

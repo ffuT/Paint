@@ -4,6 +4,11 @@
 #include <GLFW/glfw3.h>
 #include <glm.hpp>
 
+struct vec2f{
+    float x;
+    float y;
+};
+
 class App{
     public:
     App();
@@ -18,31 +23,40 @@ class App{
     int getWidth() {return m_width;};
     int getHeight() {return m_height;};
     
-    void setMouseDown(bool);
+    void setMouseDown(int, bool);
     void setMousePos(double, double);
-    double getMouseX() {return m_mouseX;}
-    double getMouseY() {return m_mouseY;}
+    double getMouseX() {return m_mouse.x;}
+    double getMouseY() {return m_mouse.y;}
     
+
     private:
-    float m_sx = 1.0f, m_sy = 1.0f;
+
+    vec2f m_scale;
     int m_canvasOffsetWidth, m_canvasOffsetHeight;
     int m_canvasWidth, m_canvasHeight;
     int m_width, m_height;
     unsigned int* pixels;
 
+    vec2f m_drag;
+    vec2f m_draggedOffset = vec2f();
+
     // draw tools
     bool m_mouseLeftDown = false;
-    int m_toolRadius = 10;
+    bool m_mouseRightDown = false;
+    int m_toolRadius = 5;
 
-    double m_mouseX, m_mouseY;
+    vec2f m_mouse;
     GLFWwindow* m_window;
     GLuint m_tex, m_shader, m_vao;
 
     void createVAO();
     void createShader();
     void render();
-    void draw();
 
+    void drag();
+
+    void draw();
+    void stampCircle(int, int);
 };
 
 const float verts[] = {
