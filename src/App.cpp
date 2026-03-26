@@ -3,6 +3,7 @@
 #include <cstdio>
 
 namespace Color {
+    // unsigned int color = AABBGGRR
     constexpr unsigned int White = 0xffffffff;
     constexpr unsigned int Black = 0xff000000;
     constexpr unsigned int Red = 0xff0000ff;
@@ -42,11 +43,11 @@ void mouseClickCallback(GLFWwindow* window, int button, int action, int mods){
             app->setMouseDown(action == GLFW_PRESS);
             break;
     }
-    printf("mouse click %d %d %d\n", button, x, y);        
+    printf("mouse click %d x:%d y:%d\n", button, x, y);        
 }
 
 void keyPressCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
-    printf("%c\n", key);
+    printf("%d\n", key);
     
     App* app = (App*) glfwGetWindowUserPointer(window);
     if(!app) return;
@@ -89,10 +90,17 @@ void App::setMousePos(double x, double y){
 
 void App::start(){
     printf("Starting App!\n");
-
+    
     while(!glfwWindowShouldClose(m_window)) {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+        
+        // get window scale from system
+        glfwGetWindowContentScale(m_window, &m_sx,&m_sy);
+   
+        // canvas offset pos in on screen:
+        m_canvasOffsetWidth = m_sx*m_width/2 - (float) m_canvasWidth/2;
+        m_canvasOffsetHeight = m_sy*m_height/2 - (float) m_canvasHeight/2;
 
         draw();
         render();
@@ -103,7 +111,6 @@ void App::start(){
 
     glfwTerminate();
 }
-
 
 int App::initialize(){
     printf("Initializing App!\n");
@@ -123,6 +130,7 @@ int App::initialize(){
         glfwTerminate();
         return -1;
     }
+    
     glfwMakeContextCurrent(m_window);
 
     glfwSetWindowTitle(m_window, "Paint");
@@ -144,25 +152,23 @@ int App::initialize(){
     glViewport(0, 0, m_canvasWidth, m_canvasHeight);
     
     //callbacks
+    //glfwSetFramebufferSizeCallback(m_window, framebufferSizeCallback); // disable to lock canvas
     glfwSetWindowUserPointer(m_window, this);
     glfwSetCursorPosCallback(m_window, curserMoveCallback);
-    glfwSetFramebufferSizeCallback(m_window, framebufferSizeCallback); // disable to lock canvas
     glfwSetWindowSizeCallback(m_window, windowResizeCallback);
     glfwSetKeyCallback(m_window, keyPressCallback);
     glfwSetMouseButtonCallback(m_window, mouseClickCallback);
+    
     return 0;
 }
 
 void App::draw(){
     if(!m_mouseLeftDown) return;
 
-    float sx, sy;
-    glfwGetWindowContentScale(m_window, &sx,&sy);
-
-    int cx = m_mouseX * sx;
-    int cy = m_mouseY * sy;
+    int cx = m_mouseX * m_sx - m_canvasOffsetWidth;
+    int cy = m_mouseY * m_sy - m_canvasOffsetHeight;
     int r = m_toolRadius;
-    printf("draw: %d %d\n", cx, cy);
+    //printf("draw: %d %d\n", cx, cy);
 
     // cirlce fill
     for(int y = cy-r; y <= cy+r; y++){
@@ -183,6 +189,8 @@ void App::render(){
     glBindTexture(GL_TEXTURE_2D, m_tex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_canvasWidth, m_canvasHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     
+    glViewport(m_canvasOffsetWidth,m_canvasOffsetHeight, m_canvasWidth, m_canvasHeight);
+
     glUseProgram(m_shader);
     glBindVertexArray(m_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);

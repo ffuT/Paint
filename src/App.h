@@ -24,6 +24,8 @@ class App{
     double getMouseY() {return m_mouseY;}
     
     private:
+    float m_sx = 1.0f, m_sy = 1.0f;
+    int m_canvasOffsetWidth, m_canvasOffsetHeight;
     int m_canvasWidth, m_canvasHeight;
     int m_width, m_height;
     unsigned int* pixels;
