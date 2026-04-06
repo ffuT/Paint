@@ -1,16 +1,8 @@
 #include "App.h"
+#include "Brush.h"
 #include <GLFW/glfw3.h>
 #include <cstdio>
 #include <math.h>
-
-namespace Color {
-    // unsigned int color = AABBGGRR
-    constexpr unsigned int White = 0xffffffff;
-    constexpr unsigned int Black = 0xff000000;
-    constexpr unsigned int Red = 0xff0000ff;
-    constexpr unsigned int Green = 0xff00ff00;
-    constexpr unsigned int Blue = 0xffff0000;
-};
 
 void framebufferSizeCallback(GLFWwindow* window, int w, int h) {
     App* app = (App*) glfwGetWindowUserPointer(window);
@@ -44,10 +36,19 @@ void mouseClickCallback(GLFWwindow* window, int button, int action, int mods){
 }
 
 void keyPressCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
-    printf("%d\n", key);
+    //printf("%d\n", key);
     
     App* app = (App*) glfwGetWindowUserPointer(window);
     if(!app) return;
+    if(action) // action 1 = click, 0 = release
+        switch (key) {
+            case GLFW_KEY_R:
+                app->brush.nextBrush();
+            break;
+            case GLFW_KEY_C:
+                app->clearCanvas();
+            break;
+        }
 }
 
 App::App() : m_canvasWidth(1200), m_canvasHeight(800) {
@@ -61,6 +62,12 @@ App::App() : m_canvasWidth(1200), m_canvasHeight(800) {
 
 App::~App(){
     delete[] pixels;
+}
+
+void App::clearCanvas(){
+    for(int i = 0; i < m_canvasHeight * m_canvasWidth; i++){
+        pixels[i] = Color::White;
+    }
 }
 
 void App::setWindowBounds(int w, int h){
@@ -85,7 +92,7 @@ void App::setMouseDown(int button, bool in){
         break;
     case GLFW_MOUSE_BUTTON_RIGHT:
         m_mouseRightDown = in;
-        m_drag = m_mouse;
+        m_dragStart = m_mouse;
         break;
     }
 }
@@ -120,7 +127,7 @@ void App::start(){
     glfwTerminate();
 }
 
-int App::initialize(){
+bool App::initialize(){
     printf("Initializing App!\n");
 
     for(int i = 0; i < m_canvasWidth * m_canvasHeight; i++){
@@ -129,14 +136,14 @@ int App::initialize(){
 
     if(!glfwInit()){
         printf("error initializing glfw\n");
-        return -1;
+        return false;
     }
     
     m_window = glfwCreateWindow(m_width, m_height, "Paint", nullptr, nullptr);
     if (!m_window) {
         printf("Failed to create GLFW window\n");
         glfwTerminate();
-        return -1;
+        return false;
     }
     
     glfwMakeContextCurrent(m_window);
@@ -145,7 +152,7 @@ int App::initialize(){
     
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         printf("Failed to initialize GLAD\n");
-        return -1;
+        return false;
     }
 
     createShader();
@@ -157,6 +164,9 @@ int App::initialize(){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
     glViewport(0, 0, m_canvasWidth, m_canvasHeight);
     
     //callbacks
@@ -167,18 +177,18 @@ int App::initialize(){
     glfwSetKeyCallback(m_window, keyPressCallback);
     glfwSetMouseButtonCallback(m_window, mouseClickCallback);
     
-    return 0;
+    return true;
 }
 
 void App::drag(){
     if(!m_mouseRightDown) return;
-    float dx = m_drag.x - m_mouse.x;
-    float dy = m_drag.y - m_mouse.y;
+    float dx = m_dragStart.x - m_mouse.x;
+    float dy = m_dragStart.y - m_mouse.y;
 
     m_draggedOffset.x -= dx;
     m_draggedOffset.y += dy;
-    m_drag.x -= dx;
-    m_drag.y -= dy;
+    m_dragStart.x -= dx;
+    m_dragStart.y -= dy;
 }
 
 void App::draw(){
@@ -200,27 +210,11 @@ void App::draw(){
     int steps = std::max(1, (int)std::ceil(dist));
     for (int i = 0; i <= steps; i++) {
         float t = (float) i/steps;
-        stampCircle(prevCx + t * dx, prevCy + t *dy);
-        // TODO more stamps
+        brush.stamp(pixels, prevCx + t * dx, prevCy + t *dy, m_canvasWidth, m_canvasHeight);
     }
 
     prevCx = cx;
     prevCy = cy;
-}
-
-void App::stampCircle(int cx, int cy){
-    int r = m_toolRadius;
-    for(int y = cy-r; y <= cy+r; y++){
-        for(int x = cx-r; x <= cx+r; x++){
-            if(x < 0 || x >= m_canvasWidth || y < 0 || y >= m_canvasHeight)
-                continue;   
-            int dx = (x - cx);
-            int dy = (y - cy);
-            if(dx*dx + dy*dy <= r*r){
-                pixels[y * m_canvasWidth + x] = Color::Black;
-            }
-        }
-    }
 }
 
 void App::render(){

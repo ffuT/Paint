@@ -2,7 +2,9 @@
 
 int main() {
     App app;
-    app.initialize();
-    app.start();
-    return 0;
+    if(app.initialize()){
+        app.start();
+        return 0;
+    }
+    return -1;
 }

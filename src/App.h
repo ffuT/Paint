@@ -3,6 +3,8 @@
 #include <glad.h>
 #include <GLFW/glfw3.h>
 
+#include "Brush.h"
+
 struct vec2f{
     float x;
     float y;
@@ -13,7 +15,7 @@ class App{
     App();
     ~App();
     
-    int initialize();
+    bool initialize();
     void start();
     
     void setWindowBounds(int, int);
@@ -24,10 +26,13 @@ class App{
     
     void setMouseDown(int, bool);
     void setMousePos(double, double);
+    
     double getMouseX() {return m_mouse.x;}
     double getMouseY() {return m_mouse.y;}
-    
 
+    void clearCanvas();
+    
+    Brush brush;
     private:
 
     vec2f m_scale;
@@ -36,14 +41,13 @@ class App{
     int m_width, m_height;
     unsigned int* pixels;
 
-    vec2f m_drag;
+    vec2f m_dragStart;
     vec2f m_draggedOffset = vec2f();
 
     // draw tools
     bool m_mouseLeftDown = false;
     bool m_mouseRightDown = false;
-    int m_toolRadius = 5;
-
+    
     vec2f m_mouse;
     GLFWwindow* m_window;
     GLuint m_tex, m_shader, m_vao;
@@ -51,11 +55,10 @@ class App{
     void createVAO();
     void createShader();
     void render();
-
+    
     void drag();
 
     void draw();
-    void stampCircle(int, int);
 };
 
 const float verts[] = {
