@@ -116,7 +116,8 @@ void App::start(){
     glfwGetWindowContentScale(m_window, &m_scale.x,&m_scale.y);
     // canvas offset pos on screen:
     m_canvasOffsetWidth = m_scale.x*m_width/2 - (float) m_canvasWidth/2;
-    m_canvasOffsetHeight = m_scale.y*m_height/2.1 - (float) m_canvasHeight/2;
+    m_canvasOffsetHeight = m_scale.y*m_height/2 - (float) m_canvasHeight/2;
+    m_draggedOffset.y -= (float) m_height/20;
 
     while(!glfwWindowShouldClose(m_window)) {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
