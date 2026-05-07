@@ -32,7 +32,7 @@ class Brush{
     brush currentBrush = circle;
     private:
 
-    std::unordered_map<brush, std::function<bool(int,int, int)>> brushmap = {
+    std::unordered_map<brush, std::function<bool(int, int, int)>> brushmap = {
         { brush::NONE, [](int dx, int dy, int r) 
             {return false;}},
         { brush::circle, [](int dx, int dy, int r) 

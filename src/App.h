@@ -15,7 +15,8 @@ class App{
     App();
     ~App();
     
-    bool initialize();
+    // returns true on success
+    bool initialize(); 
     void start();
     
     void setWindowBounds(int, int);

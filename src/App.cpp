@@ -104,18 +104,24 @@ void App::setMousePos(double x, double y){
 
 void App::start(){
     printf("Starting App!\n");
-    
+
+    // wakeup window (i guess?) so i can call methods
+    glfwSwapBuffers(m_window);
+    glfwWaitEvents();
+
+    // resize to fit initial window size
+    framebufferSizeCallback(m_window, m_width, m_height);
+
+    // get window scale from system
+    glfwGetWindowContentScale(m_window, &m_scale.x,&m_scale.y);
+    // canvas offset pos on screen:
+    m_canvasOffsetWidth = m_scale.x*m_width/2 - (float) m_canvasWidth/2;
+    m_canvasOffsetHeight = m_scale.y*m_height/2.1 - (float) m_canvasHeight/2;
+
     while(!glfwWindowShouldClose(m_window)) {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        
-        // get window scale from system
-        glfwGetWindowContentScale(m_window, &m_scale.x,&m_scale.y);
-   
-        // canvas offset pos in on screen:
-        m_canvasOffsetWidth = m_scale.x*m_width/2 - (float) m_canvasWidth/2;
-        m_canvasOffsetHeight = m_scale.y*m_height/2 - (float) m_canvasHeight/2;
-
+  
         drag();
         draw();
         render();
