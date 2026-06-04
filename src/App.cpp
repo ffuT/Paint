@@ -219,17 +219,16 @@ void App::drag(){
 }
 
 void App::updateScroll(double xoffset, double yoffset){
-    if(CTRL_down){
+    if(CTRL_down){ // zoom on ctrl + scroll
         double oldzoom = m_zoom;
         m_zoom *= (1.0f + yoffset * 0.1f);
         printf("zoom = %f\n", m_zoom);
-
         // not perfect but its ok
         m_draggedOffset.x -= (m_width/2) * (m_zoom - oldzoom);
         m_draggedOffset.y -= (m_height/2) * (m_zoom - oldzoom);
     } else { // panning on scroll if not pressing CTRL
-        m_canvasOffsetWidth += 10 * xoffset;
-        m_canvasOffsetHeight -= 10 * yoffset;
+        m_canvasOffsetWidth += 25 * xoffset;
+        m_canvasOffsetHeight -= 25 * yoffset;
     }
 }
 

@@ -1,3 +1,15 @@
+
 UI
-color picker
-brush size slider
+    color picker
+    brush size slider + selector
+
+copy pase (select tool)
+
+delete / save states
+
+resize window (without clearing it)
+
+better curving
+
+saving and opening files
+
