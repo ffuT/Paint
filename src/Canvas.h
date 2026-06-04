@@ -22,12 +22,15 @@ class Canvas{
     const unsigned int* getPixels(){return pixels;}
     
     private:
+    // canvas var
     unsigned int* pixels;
+    unsigned int m_canvasWidth;
+    unsigned int m_canvasHeight;
+
+    // snapshot var
     int currentSnapshot = 0;
-    const int maxSnapshots = 50;
+    const int maxSnapshots = 20;
     int currentSnapDepth = 0;
     std::vector<unsigned int*> snapShots;
 
-    unsigned int m_canvasWidth;
-    unsigned int m_canvasHeight;
 };

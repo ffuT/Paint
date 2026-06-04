@@ -1,11 +1,20 @@
+Finished:
 
 UI
-    color picker
-    brush size slider + selector
+  color picker 
+  brush size slider + selector
+
+delete / savestates ctrl z + y 
+
+04-06-26
+
+Still TODO:
+
+optimize savestate snapshots (diffs or mbr's) 
+
+fill tool
 
 copy paste (select tool)
-
-delete / save states ctrl z + y
 
 resize window (without clearing it)
 
