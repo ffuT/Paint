@@ -2,7 +2,6 @@
 #include "Brush.h"
 
 #include <GLFW/glfw3.h>
-#include <algorithm>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
@@ -87,6 +86,12 @@ void App::setKey(int key, int action){ // action: click = 1, release = 0
             case GLFW_KEY_C:
                 m_canvas.clearCanvas();
             break;
+            case GLFW_KEY_Z: // ctrlz
+                if(m_CTRLDown) m_canvas.goToLastSnap();
+            break;
+            case GLFW_KEY_Y: // ctrly
+                if(m_CTRLDown) m_canvas.goToNextSnap();
+            break;
         }
     }
 }
@@ -105,6 +110,9 @@ void App::setMouseDown(int button, bool in){
         m_mouseRightDown = in;
         m_dragStart = m_mouse;
         break;
+    }
+    if(button == GLFW_MOUSE_BUTTON_LEFT && in == 0){
+        m_canvas.saveSnapshot();
     }
 }
 

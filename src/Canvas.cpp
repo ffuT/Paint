@@ -1,9 +1,11 @@
 #include "Canvas.h"
 #include "Brush.h"
 #include "math.h"
+#include <cstring>
 
 Canvas::Canvas(unsigned int w, unsigned int h) : 
     m_canvasWidth(w), m_canvasHeight(h){
+    snapShots = std::vector<unsigned int*>(maxSnapshots, nullptr);
     pixels = new unsigned int[w * h];
     clearCanvas();
 }
@@ -12,10 +14,53 @@ Canvas::~Canvas(){
     delete[] pixels;
 }
 
+void Canvas::saveSnapshot(){
+    currentSnapshot++;
+    if(currentSnapshot >= maxSnapshots) // wrap back from max
+        currentSnapshot = 0;
+    if(snapShots[currentSnapshot] != nullptr) 
+        delete[] snapShots[currentSnapshot];
+    snapShots[currentSnapshot] = new unsigned int[m_canvasWidth * m_canvasHeight];
+    std::memcpy(snapShots[currentSnapshot], pixels, m_canvasWidth * m_canvasHeight * sizeof(unsigned int));
+    //printf("saved sn at %d\n", currentSnapshot);
+    currentSnapDepth = 0;
+}
+
+void Canvas::goToLastSnap(){
+    currentSnapshot--;
+    if(currentSnapshot < 0)
+        currentSnapshot = maxSnapshots-1;
+    if(snapShots[currentSnapshot] == nullptr){ // cant go back
+        currentSnapshot++;
+        if(currentSnapshot >= maxSnapshots) 
+            currentSnapshot = 0;
+        return;
+    } 
+    currentSnapDepth++;
+    //printf("copy snapshot at %d\n", currentSnapshot);
+    std::memcpy(pixels, snapShots[currentSnapshot], m_canvasWidth * m_canvasHeight * sizeof(unsigned int));
+}
+
+void Canvas::goToNextSnap(){
+    currentSnapshot++;
+    if(currentSnapshot >= maxSnapshots) // cant go forward
+        currentSnapshot = 0;
+    if(snapShots[currentSnapshot] == nullptr){
+        currentSnapshot--;
+        if(currentSnapshot < 0) 
+            currentSnapshot = maxSnapshots-1;
+        return;
+    }
+    if(currentSnapDepth-- <= 0) return;
+    //printf("copy snapshot at %d\n", currentSnapshot);
+    std::memcpy(pixels, snapShots[currentSnapshot], m_canvasWidth * m_canvasHeight * sizeof(unsigned int));
+}
+
 void Canvas::clearCanvas(){
     for(int i = 0; i < m_canvasHeight * m_canvasWidth; i++){
         pixels[i] = Color::White;
     }
+    saveSnapshot();
 }
 
 void Canvas::draw(vec2f c, vec2f cprev, Brush& brush){
