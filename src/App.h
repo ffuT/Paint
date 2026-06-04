@@ -27,6 +27,10 @@ class App{
     
     void setMouseDown(int, bool);
     void setMousePos(double, double);
+
+    void setKey(int key, int action);
+
+    void updateScroll(double xoffset, double yoffset);
     
     double getMouseX() {return m_mouse.x;}
     double getMouseY() {return m_mouse.y;}
@@ -36,10 +40,14 @@ class App{
     Brush brush;
     private:
 
+    bool CTRL_down = false;
+    bool SHIFT_down = false;
+
     vec2f m_scale;
     int m_canvasOffsetWidth, m_canvasOffsetHeight;
     int m_canvasWidth, m_canvasHeight;
     int m_width, m_height;
+    double m_zoom = 1.0f;
     unsigned int* pixels;
 
     vec2f m_dragStart;
