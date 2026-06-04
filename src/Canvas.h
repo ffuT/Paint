@@ -6,6 +6,7 @@
 class Canvas{
     public:
     Canvas(unsigned int W, unsigned int H);
+    ~Canvas();
 
     void draw(vec2f c, vec2f cprev, Brush& brush);
     void clearCanvas();
@@ -14,7 +15,6 @@ class Canvas{
 
     unsigned int getWidth() const {return m_canvasWidth;}
     unsigned int getHeight() const {return m_canvasHeight;}
-
     const unsigned int* getPixels(){return pixels;}
 
     private:

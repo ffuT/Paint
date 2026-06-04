@@ -8,6 +8,10 @@ Canvas::Canvas(unsigned int w, unsigned int h) :
     clearCanvas();
 }
 
+Canvas::~Canvas(){
+    delete[] pixels;
+}
+
 void Canvas::clearCanvas(){
     for(int i = 0; i < m_canvasHeight * m_canvasWidth; i++){
         pixels[i] = Color::White;

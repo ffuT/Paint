@@ -5,6 +5,7 @@
 
 #include "Canvas.h"
 #include "Brush.h"
+#include "imgui/imgui.h"
 
 class App{
     public:
@@ -34,6 +35,14 @@ class App{
     Brush m_brush;
     private:
 
+    void createVAO();
+    void createShader();
+    void render();
+    void renderUI();
+    
+    void drag();
+    void draw();
+
     // input control
     bool m_CTRLDown = false;
     bool m_SHIFTDown = false;
@@ -52,13 +61,7 @@ class App{
     int m_width, m_height;
     GLFWwindow* m_window;
     GLuint m_tex, m_shader, m_vao;
-
-    void createVAO();
-    void createShader();
-    void render();
-    
-    void drag();
-    void draw();
+    const ImGuiWindowFlags m_flags;
 };
 
 static constexpr float verts[] = {

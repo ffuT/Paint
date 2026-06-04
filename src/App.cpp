@@ -1,6 +1,11 @@
 #include "App.h"
 #include "Brush.h"
+
 #include <GLFW/glfw3.h>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+
 #include <cstdio>
 #include <math.h>
 
@@ -36,7 +41,6 @@ void mouseClickCallback(GLFWwindow* window, int button, int action, int mods){
     int x = app->getMouseX();
     int y = app->getMouseY();
     app->setMouseDown(button, action == GLFW_PRESS);
-    printf("mouse click %d x:%d y:%d\n", button, x, y);        
 }
 
 void keyPressCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
@@ -46,7 +50,13 @@ void keyPressCallback(GLFWwindow* window, int key, int scancode, int action, int
     app->setKey(key, action);
 }
 
-App::App() {
+App::App() : 
+m_flags(ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoResize   |
+        ImGuiWindowFlags_NoMove     |
+        ImGuiWindowFlags_NoScrollbar|
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoBringToFrontOnFocus) {
     m_scale.x = 1.0f;
     m_scale.y = 1.0f;
     m_width = 1200;
@@ -54,8 +64,7 @@ App::App() {
     printf("Creating App!\n");
 }
 
-App::~App(){
-}
+App::~App(){}
 
 void App::setKey(int key, int action){ // action: click = 1, release = 0
     switch (key) {
@@ -123,11 +132,15 @@ void App::start(){
         drag();
         draw();
         render();
+        renderUI();
 
         glfwSwapBuffers(m_window);
         glfwWaitEvents();
     }
 
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     glfwTerminate();
 }
 
@@ -155,6 +168,7 @@ bool App::initialize(){
         return false;
     }
 
+
     createShader();
     createVAO();
     
@@ -178,6 +192,11 @@ bool App::initialize(){
     glfwSetMouseButtonCallback(m_window, mouseClickCallback);
     glfwSetScrollCallback(m_window, scrollCallback);
     
+    // init ui
+    ImGui::CreateContext();
+    ImGui_ImplGlfw_InitForOpenGL(m_window, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
+
     return true;
 }
 
@@ -213,13 +232,34 @@ void App::draw(){
     
     static vec2f prevCenter = center;
 
-    if(!m_mouseLeftDown){ //if not click set prev + return
+    if(!m_mouseLeftDown || ImGui::GetIO().WantCaptureMouse){ //if not click set prev + return
         prevCenter = center;
         return;
     }
     m_canvas.draw(center, prevCenter, m_brush);
 
     prevCenter = center;
+}
+
+void App::renderUI(){
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    
+    ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(m_width+5, 200), ImGuiCond_Always);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    {
+        ImGui::Begin("stuff", nullptr, m_flags);
+
+        static ImVec4 col(0,0,0,1);
+        ImGui::ColorEdit4("##color", (float*) &col, ImGuiColorEditFlags_NoInputs);
+        m_brush.setColor(ImGui::ColorConvertFloat4ToU32(col));
+
+        ImGui::End();
+    }
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void App::render(){
