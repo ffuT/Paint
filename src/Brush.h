@@ -29,11 +29,15 @@ class Brush{
     void stamp(unsigned int*, int, int, int, int) const;
 
     void setColor(unsigned int color);
+    unsigned int getColor(){return currentColor;}
+    
+    void setRadius(float r){brushRadius = r;}
+    float getRadius(){return brushRadius;}
     
     private:
     // brush vars
     brush currentBrush = circle;
-    int brushRadius = 5;
+    float brushRadius = 5.0f;
     unsigned int currentColor = Color::Black;
 
     std::unordered_map<const brush, std::function<bool(int, int, int)>> brushmap = {

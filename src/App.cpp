@@ -2,6 +2,7 @@
 #include "Brush.h"
 
 #include <GLFW/glfw3.h>
+#include <algorithm>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
@@ -59,8 +60,8 @@ m_flags(ImGuiWindowFlags_NoTitleBar |
         ImGuiWindowFlags_NoBringToFrontOnFocus) {
     m_scale.x = 1.0f;
     m_scale.y = 1.0f;
-    m_width = 1200;
-    m_height = 800;
+    m_width = 1920;
+    m_height = 1080;
     printf("Creating App!\n");
 }
 
@@ -168,7 +169,6 @@ bool App::initialize(){
         return false;
     }
 
-
     createShader();
     createVAO();
     
@@ -215,12 +215,15 @@ void App::updateScroll(double xoffset, double yoffset){
     if(m_CTRLDown){ // zoom on ctrl + scroll
         double oldzoom = m_zoom;
         m_zoom *= (1.0f + yoffset * 0.1f);
+        if(m_zoom >= 13.0f){ // magic zoom lvl? larger gives broken zoom
+            m_zoom = 13.0f;
+        }
         // not perfect but its ok
-        m_canvasOffsetWidth -= ((double) m_width/2) * (m_zoom - oldzoom);
-        m_canvasOffsetHeight -= ((double) m_height/2) * (m_zoom - oldzoom);
+        m_canvasOffsetWidth -= ((double) m_canvas.getWidth()/2) * (m_zoom - oldzoom);
+        m_canvasOffsetHeight -= ((double) m_canvas.getHeight()/2) * (m_zoom - oldzoom);
     } else { // panning on scroll if not pressing CTRL
-        m_canvasOffsetWidth += 10 * xoffset;
-        m_canvasOffsetHeight -= 10 * yoffset;
+        m_canvasOffsetWidth += (xoffset / m_zoom*m_zoom) * 33;
+        m_canvasOffsetHeight -= (yoffset / m_zoom*m_zoom) * 33;
     }
 }
 
@@ -249,18 +252,22 @@ void App::renderUI(){
     ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiCond_Always);
     ImGui::SetNextWindowSize(ImVec2(m_width+5, 200), ImGuiCond_Always);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::Begin("stuff", nullptr, m_flags);
     {
-        ImGui::Begin("stuff", nullptr, m_flags);
-
         // color picker
-        static ImVec4 col(0,0,0,1);
-        ImGui::ColorEdit4("##color", (float*) &col, ImGuiColorEditFlags_NoInputs);
+        static ImVec4 col = ImGui::ColorConvertU32ToFloat4(m_brush.getColor());
+        ImGui::ColorEdit4("color picker", (float*) &col, ImGuiColorEditFlags_NoInputs);
         m_brush.setColor(ImGui::ColorConvertFloat4ToU32(col));
 
-        // buttons
+        ImGui::SameLine();
 
-        ImGui::End();
+        // radius picker
+        float radius = m_brush.getRadius();
+        ImGui::SliderFloat("brush size", &radius, 1.0f, 50.0f, "%.1f");
+        m_brush.setRadius(radius);
+
     }
+    ImGui::End();
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
