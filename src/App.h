@@ -50,10 +50,9 @@ class App{
     bool m_mouseRightDown = false;
     vec2f m_mouse;
     vec2f m_dragStart;
-    vec2f m_draggedOffset = vec2f();
 
     // canvas var
-    int m_canvasOffsetWidth, m_canvasOffsetHeight;
+    float m_canvasOffsetWidth, m_canvasOffsetHeight;
     double m_zoom = 1.0f;
     vec2f m_scale;
     

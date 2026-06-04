@@ -123,7 +123,7 @@ void App::start(){
     // canvas offset pos on screen:
     m_canvasOffsetWidth = m_scale.x*m_width/2 - (float) m_canvas.getWidth()/2;
     m_canvasOffsetHeight = m_scale.y*m_height/2 - (float) m_canvas.getHeight()/2;
-    m_draggedOffset.y -= (float) m_height/20;
+    m_canvasOffsetHeight -= (float) m_height/20;
 
     while(!glfwWindowShouldClose(m_window)) {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -201,12 +201,12 @@ bool App::initialize(){
 }
 
 void App::drag(){
-    if(!m_mouseRightDown) return;
+    if(!m_mouseRightDown || !m_CTRLDown) return;
     float dx = m_dragStart.x - m_mouse.x;
     float dy = m_dragStart.y - m_mouse.y;
 
-    m_draggedOffset.x -= dx;
-    m_draggedOffset.y += dy;
+    m_canvasOffsetWidth -= dx;
+    m_canvasOffsetHeight += dy;
     m_dragStart.x -= dx;
     m_dragStart.y -= dy;
 }
@@ -216,19 +216,19 @@ void App::updateScroll(double xoffset, double yoffset){
         double oldzoom = m_zoom;
         m_zoom *= (1.0f + yoffset * 0.1f);
         // not perfect but its ok
-        m_draggedOffset.x -= ((double) m_width/2) * (m_zoom - oldzoom);
-        m_draggedOffset.y -= ((double) m_height/2) * (m_zoom - oldzoom);
+        m_canvasOffsetWidth -= ((double) m_width/2) * (m_zoom - oldzoom);
+        m_canvasOffsetHeight -= ((double) m_height/2) * (m_zoom - oldzoom);
     } else { // panning on scroll if not pressing CTRL
-        m_canvasOffsetWidth += 25 * xoffset;
-        m_canvasOffsetHeight -= 25 * yoffset;
+        m_canvasOffsetWidth += 10 * xoffset;
+        m_canvasOffsetHeight -= 10 * yoffset;
     }
 }
 
 void App::draw(){
     // center click pos on canvas mouse * scale - offsetst all / by zoom scale
     vec2f center; 
-    center.x = (m_mouse.x * m_scale.x - (m_canvasOffsetWidth + m_draggedOffset.x)) / m_zoom;
-    center.y = (m_height * m_scale.y - m_mouse.y * m_scale.y - (m_canvasOffsetHeight + m_draggedOffset.y)) / m_zoom;
+    center.x = (m_mouse.x * m_scale.x - (m_canvasOffsetWidth)) / m_zoom;
+    center.y = (m_height * m_scale.y - m_mouse.y * m_scale.y - (m_canvasOffsetHeight)) / m_zoom;
     
     static vec2f prevCenter = center;
 
@@ -252,9 +252,12 @@ void App::renderUI(){
     {
         ImGui::Begin("stuff", nullptr, m_flags);
 
+        // color picker
         static ImVec4 col(0,0,0,1);
         ImGui::ColorEdit4("##color", (float*) &col, ImGuiColorEditFlags_NoInputs);
         m_brush.setColor(ImGui::ColorConvertFloat4ToU32(col));
+
+        // buttons
 
         ImGui::End();
     }
@@ -266,9 +269,7 @@ void App::render(){
     glBindTexture(GL_TEXTURE_2D, m_tex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_canvas.getWidth(), m_canvas.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, m_canvas.getPixels());
     
-    int offsetW = m_canvasOffsetWidth + m_draggedOffset.x;
-    int offsetH = m_canvasOffsetHeight + m_draggedOffset.y;
-    glViewport(offsetW, offsetH, m_canvas.getWidth() * m_zoom, m_canvas.getHeight() * m_zoom);
+    glViewport(m_canvasOffsetWidth, m_canvasOffsetHeight, m_canvas.getWidth() * m_zoom, m_canvas.getHeight() * m_zoom);
 
     glUseProgram(m_shader);
     glBindVertexArray(m_vao);
