@@ -213,7 +213,7 @@ bool App::initialize(){
 }
 
 void App::drag(){
-    if(!m_mouseRightDown || !m_CTRLDown) return;
+    if(!m_mouseRightDown) return;
     float dx = m_dragStart.x - m_mouse.x;
     float dy = m_dragStart.y - m_mouse.y;
 
@@ -227,11 +227,13 @@ void App::updateScroll(double xoffset, double yoffset){
     if(m_CTRLDown){ // zoom on ctrl + scroll
         double oldzoom = m_zoom;
         m_zoom *= (1.0f + yoffset * 0.1f);
-        if(m_zoom >= 13.0f){ // magic zoom lvl? larger gives broken zoom
-            m_zoom = 13.0f;
+        int CW = m_canvas.getWidth();
+        const int magic = CW / (CW / (CW / 220)); // magic zoom lvl? larger gives broken zoom
+        if(m_zoom >= magic){ 
+            m_zoom = magic;
         }
         // not perfect but its ok
-        m_canvasOffsetWidth -= ((double) m_canvas.getWidth()/2) * (m_zoom - oldzoom);
+        m_canvasOffsetWidth -= ((double) CW/2) * (m_zoom - oldzoom);
         m_canvasOffsetHeight -= ((double) m_canvas.getHeight()/2) * (m_zoom - oldzoom);
     } else { // panning on scroll if not pressing CTRL
         m_canvasOffsetWidth += (xoffset / m_zoom*m_zoom) * 33;
