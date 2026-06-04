@@ -132,7 +132,11 @@ void App::start(){
     // canvas offset pos on screen:
     m_canvasOffsetWidth = m_scale.x*m_width/2 - (float) m_canvas.getWidth()/2;
     m_canvasOffsetHeight = m_scale.y*m_height/2 - (float) m_canvas.getHeight()/2;
-    m_canvasOffsetHeight -= (float) m_height/20;
+    m_canvasOffsetHeight -= (float) m_height/10;
+    
+    m_CTRLDown = true;
+    updateScroll(0, -1.33);
+    m_CTRLDown = false;
 
     while(!glfwWindowShouldClose(m_window)) {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -258,7 +262,7 @@ void App::renderUI(){
     ImGui::NewFrame();
     
     ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(m_width+5, 200), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(m_width+5, 140), ImGuiCond_Always);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::Begin("stuff", nullptr, m_flags);
     {

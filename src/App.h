@@ -31,7 +31,7 @@ class App{
     double getMouseX() {return m_mouse.x;}
     double getMouseY() {return m_mouse.y;}
 
-    Canvas m_canvas = Canvas(1200, 800);
+    Canvas m_canvas = Canvas(1920, 1080);
     Brush m_brush;
     private:
 

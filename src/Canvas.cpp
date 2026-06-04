@@ -23,7 +23,6 @@ void Canvas::saveSnapshot(){
     snapShots[currentSnapshot] = new unsigned int[m_canvasWidth * m_canvasHeight];
     std::memcpy(snapShots[currentSnapshot], pixels, m_canvasWidth * m_canvasHeight * sizeof(unsigned int));
     //printf("saved sn at %d\n", currentSnapshot);
-    currentSnapDepth = 0;
 }
 
 void Canvas::goToLastSnap(){
