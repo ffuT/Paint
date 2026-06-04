@@ -19,7 +19,7 @@ project "Paint"
     language "C++"
     targetdir "bin/%{cfg.buildcfg}"
 
-    files { "src/vendor/glad/src/glad.c", "src/**.hpp", "src/**.h", "src/**.cpp" }
+    files { "src/vendor/glad/src/glad.c", "src/vendor/imgui/*" , "src/**.hpp", "src/**.h", "src/**.cpp" }
 
     includedirs { "src/**", "Dependencies/glfw/include", "src/vendor/**" }
 

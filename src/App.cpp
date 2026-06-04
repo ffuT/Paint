@@ -7,7 +7,7 @@
 void framebufferSizeCallback(GLFWwindow* window, int w, int h) {
     App* app = (App*) glfwGetWindowUserPointer(window);
     if(!app) return;
-    app->setFrameBounds(w, h);
+    app->m_canvas.newPixelBuffer(w, h);
     glViewport(0, 0, w, h);
     printf("resized canvas to %dx%d \n", w, h);
 }
@@ -46,44 +46,36 @@ void keyPressCallback(GLFWwindow* window, int key, int scancode, int action, int
     app->setKey(key, action);
 }
 
-App::App() : m_canvasWidth(1200), m_canvasHeight(800) {
+App::App() {
     m_scale.x = 1.0f;
     m_scale.y = 1.0f;
-    m_width = m_canvasWidth;
-    m_height = m_canvasHeight;
-    pixels = new unsigned int[m_canvasWidth * m_canvasHeight];
+    m_width = 1200;
+    m_height = 800;
     printf("Creating App!\n");
 }
 
 App::~App(){
-    delete[] pixels;
-}
-
-void App::clearCanvas(){
-    for(int i = 0; i < m_canvasHeight * m_canvasWidth; i++){
-        pixels[i] = Color::White;
-    }
 }
 
 void App::setKey(int key, int action){ // action: click = 1, release = 0
     switch (key) {
         case GLFW_KEY_LEFT_CONTROL:
         case GLFW_KEY_RIGHT_CONTROL:
-            CTRL_down = action;
+            m_CTRLDown = action;
         break;
         case GLFW_KEY_LEFT_SHIFT:
         case GLFW_KEY_RIGHT_SHIFT:
-            SHIFT_down = action;
+            m_SHIFTDown = action;
         break;
     }
 
     if(action){ // only switch on click
         switch (key) {
             case GLFW_KEY_R:
-                brush.nextBrush();
+                m_brush.nextBrush();
             break;
             case GLFW_KEY_C:
-                clearCanvas();
+                m_canvas.clearCanvas();
             break;
         }
     }
@@ -92,16 +84,6 @@ void App::setKey(int key, int action){ // action: click = 1, release = 0
 void App::setWindowBounds(int w, int h){
     m_width = w;
     m_height = h;
-}
-
-void App::setFrameBounds(int w, int h){
-    delete[] pixels;
-    pixels = new unsigned int[w * h];
-    for(int i = 0; i < w * h; i++){
-        pixels[i] = Color::White;
-    }
-    m_canvasWidth = w;
-    m_canvasHeight = h;
 }
 
 void App::setMouseDown(int button, bool in){
@@ -127,15 +109,11 @@ void App::start(){
     // wakeup window (i guess?) so i can call methods
     glfwSwapBuffers(m_window);
     glfwWaitEvents();
-
-    // resize to fit initial window size
-    //framebufferSizeCallback(m_window, m_width, m_height);
-
     // get window scale from system
     glfwGetWindowContentScale(m_window, &m_scale.x,&m_scale.y);
     // canvas offset pos on screen:
-    m_canvasOffsetWidth = m_scale.x*m_width/2 - (float) m_canvasWidth/2;
-    m_canvasOffsetHeight = m_scale.y*m_height/2 - (float) m_canvasHeight/2;
+    m_canvasOffsetWidth = m_scale.x*m_width/2 - (float) m_canvas.getWidth()/2;
+    m_canvasOffsetHeight = m_scale.y*m_height/2 - (float) m_canvas.getHeight()/2;
     m_draggedOffset.y -= (float) m_height/20;
 
     while(!glfwWindowShouldClose(m_window)) {
@@ -155,10 +133,6 @@ void App::start(){
 
 bool App::initialize(){
     printf("Initializing App!\n");
-
-    for(int i = 0; i < m_canvasWidth * m_canvasHeight; i++){
-        pixels[i] = Color::White;
-    }
 
     if(!glfwInit()){
         printf("error initializing glfw\n");
@@ -193,7 +167,7 @@ bool App::initialize(){
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
-    glViewport(0, 0, m_canvasWidth, m_canvasHeight);
+    glViewport(0, 0, m_canvas.getWidth(), m_canvas.getHeight());
     
     //callbacks
     //glfwSetFramebufferSizeCallback(m_window, framebufferSizeCallback); // disable to lock canvas
@@ -219,13 +193,12 @@ void App::drag(){
 }
 
 void App::updateScroll(double xoffset, double yoffset){
-    if(CTRL_down){ // zoom on ctrl + scroll
+    if(m_CTRLDown){ // zoom on ctrl + scroll
         double oldzoom = m_zoom;
         m_zoom *= (1.0f + yoffset * 0.1f);
-        printf("zoom = %f\n", m_zoom);
         // not perfect but its ok
-        m_draggedOffset.x -= (m_width/2) * (m_zoom - oldzoom);
-        m_draggedOffset.y -= (m_height/2) * (m_zoom - oldzoom);
+        m_draggedOffset.x -= ((double) m_width/2) * (m_zoom - oldzoom);
+        m_draggedOffset.y -= ((double) m_height/2) * (m_zoom - oldzoom);
     } else { // panning on scroll if not pressing CTRL
         m_canvasOffsetWidth += 25 * xoffset;
         m_canvasOffsetHeight -= 25 * yoffset;
@@ -234,40 +207,28 @@ void App::updateScroll(double xoffset, double yoffset){
 
 void App::draw(){
     // center click pos on canvas mouse * scale - offsetst all / by zoom scale
-    int cx = (m_mouse.x * m_scale.x - (m_canvasOffsetWidth + m_draggedOffset.x)) / m_zoom;
-    int cy = (m_height * m_scale.y - m_mouse.y * m_scale.y - (m_canvasOffsetHeight + m_draggedOffset.y)) / m_zoom;
+    vec2f center; 
+    center.x = (m_mouse.x * m_scale.x - (m_canvasOffsetWidth + m_draggedOffset.x)) / m_zoom;
+    center.y = (m_height * m_scale.y - m_mouse.y * m_scale.y - (m_canvasOffsetHeight + m_draggedOffset.y)) / m_zoom;
     
-    static int prevCx = cx;
-    static int prevCy = cy;
+    static vec2f prevCenter = center;
 
-    if(!m_mouseLeftDown){
-        //if not click set prev click to current
-        prevCx = cx;
-        prevCy = cy;
+    if(!m_mouseLeftDown){ //if not click set prev + return
+        prevCenter = center;
         return;
     }
-    printf("cx %d cy %d\n", cx, cy);
+    m_canvas.draw(center, prevCenter, m_brush);
 
-    // simple interp between prevc and currentc
-    float dx = cx - prevCx, dy = cy - prevCy;
-    float dist = std::sqrt(dx*dx+dy*dy);
-    int steps = std::max(1, (int)std::ceil(dist));
-    for (int i = 0; i <= steps; i++) {
-        float t = (float) i/steps;
-        brush.stamp(pixels, prevCx + t * dx, prevCy + t *dy, m_canvasWidth, m_canvasHeight);
-    }
-
-    prevCx = cx;
-    prevCy = cy;
+    prevCenter = center;
 }
 
 void App::render(){
     glBindTexture(GL_TEXTURE_2D, m_tex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_canvasWidth, m_canvasHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_canvas.getWidth(), m_canvas.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, m_canvas.getPixels());
     
     int offsetW = m_canvasOffsetWidth + m_draggedOffset.x;
     int offsetH = m_canvasOffsetHeight + m_draggedOffset.y;
-    glViewport(offsetW, offsetH, m_canvasWidth * m_zoom, m_canvasHeight * m_zoom);
+    glViewport(offsetW, offsetH, m_canvas.getWidth() * m_zoom, m_canvas.getHeight() * m_zoom);
 
     glUseProgram(m_shader);
     glBindVertexArray(m_vao);

@@ -4,7 +4,7 @@
 Brush::Brush(){};
 Brush::~Brush(){};
 
-void Brush::stamp(unsigned int* pixels, int cx, int cy, int w, int h){
+void Brush::stamp(unsigned int* pixels, int cx, int cy, int w, int h) const{
     int r = brushRadius;
     for(int y = cy-r; y <= cy+r; y++){
         for(int x = cx-r; x <= cx+r; x++){
@@ -12,12 +12,16 @@ void Brush::stamp(unsigned int* pixels, int cx, int cy, int w, int h){
                 continue;   
             int dx = (x - cx);
             int dy = (y - cy);
-            bool fill = brushmap[currentBrush](dx, dy, r);
+            bool fill = brushmap.at(currentBrush)(dx, dy, r);
             if(fill){
-                pixels[y * w + x] = Color::Black;
+                pixels[y * w + x] = currentColor;
             }
         }
     }
+}
+
+void Brush::setColor(unsigned int newcol){
+    currentColor = newcol;
 }
 
 void Brush::nextBrush(){

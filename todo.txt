@@ -3,13 +3,13 @@ UI
     color picker
     brush size slider + selector
 
-copy pase (select tool)
+copy paste (select tool)
 
-delete / save states
+delete / save states ctrl z + y
 
 resize window (without clearing it)
 
-better curving
+better curving on draw
 
 saving and opening files
 

@@ -26,17 +26,21 @@ class Brush{
 
     void setBrush(brush);
     void nextBrush();
-    void stamp(unsigned int*, int, int, int, int);
+    void stamp(unsigned int*, int, int, int, int) const;
 
-    int brushRadius = 5;
-    brush currentBrush = circle;
+    void setColor(unsigned int color);
+    
     private:
+    // brush vars
+    brush currentBrush = circle;
+    int brushRadius = 5;
+    unsigned int currentColor = Color::Black;
 
-    std::unordered_map<brush, std::function<bool(int, int, int)>> brushmap = {
+    std::unordered_map<const brush, std::function<bool(int, int, int)>> brushmap = {
         { brush::NONE, [](int dx, int dy, int r) 
             {return false;}},
         { brush::circle, [](int dx, int dy, int r) 
-            {return dx*dx + dy*dy <= r*r;}},
+            {return dx*dx + dy*dy < r*r;}},
         { brush::square, [](int dx, int dy, int r) 
             {return true;}}
     };

@@ -3,20 +3,15 @@
 #include <glad.h>
 #include <GLFW/glfw3.h>
 
+#include "Canvas.h"
 #include "Brush.h"
-
-struct vec2f{
-    float x;
-    float y;
-};
 
 class App{
     public:
     App();
     ~App();
     
-    // returns true on success
-    bool initialize(); 
+    bool initialize(); // return true on success
     void start();
     
     void setWindowBounds(int, int);
@@ -35,29 +30,26 @@ class App{
     double getMouseX() {return m_mouse.x;}
     double getMouseY() {return m_mouse.y;}
 
-    void clearCanvas();
-    
-    Brush brush;
+    Canvas m_canvas = Canvas(1200, 800);
+    Brush m_brush;
     private:
 
-    bool CTRL_down = false;
-    bool SHIFT_down = false;
-
-    vec2f m_scale;
-    int m_canvasOffsetWidth, m_canvasOffsetHeight;
-    int m_canvasWidth, m_canvasHeight;
-    int m_width, m_height;
-    double m_zoom = 1.0f;
-    unsigned int* pixels;
-
+    // input control
+    bool m_CTRLDown = false;
+    bool m_SHIFTDown = false;
+    bool m_mouseLeftDown = false;
+    bool m_mouseRightDown = false;
+    vec2f m_mouse;
     vec2f m_dragStart;
     vec2f m_draggedOffset = vec2f();
 
-    // draw tools
-    bool m_mouseLeftDown = false;
-    bool m_mouseRightDown = false;
+    // canvas var
+    int m_canvasOffsetWidth, m_canvasOffsetHeight;
+    double m_zoom = 1.0f;
+    vec2f m_scale;
     
-    vec2f m_mouse;
+    // window + GL
+    int m_width, m_height;
     GLFWwindow* m_window;
     GLuint m_tex, m_shader, m_vao;
 
@@ -66,11 +58,10 @@ class App{
     void render();
     
     void drag();
-
     void draw();
 };
 
-const float verts[] = {
+static constexpr float verts[] = {
     -1,-1, 0,1,
      1,-1, 1,1,
      1, 1, 1,0,
