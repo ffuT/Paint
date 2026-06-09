@@ -92,4 +92,5 @@ void Canvas::newPixelBuffer(int w, int h){
             snapShots[i] = nullptr;
         }
     }
+    saveSnapshot();
 }

@@ -1,5 +1,6 @@
 #include "App.h"
 #include "Brush.h"
+#include "Canvas.h"
 
 #include <GLFW/glfw3.h>
 #include <imgui/imgui.h>
@@ -8,6 +9,7 @@
 
 #include <cstdio>
 #include <math.h>
+#include <utility>
 
 void framebufferSizeCallback(GLFWwindow* window, int w, int h) {
     App* app = (App*) glfwGetWindowUserPointer(window);
@@ -245,12 +247,16 @@ void App::updateScroll(double xoffset, double yoffset){
     }
 }
 
-void App::draw(){
-    // center click pos on canvas mouse * scale - offsetst all / by zoom scale
+vec2f App::mouseToPixels(){
     vec2f center; 
     center.x = (m_mouse.x * m_scale.x - (m_canvasOffsetWidth)) / m_zoom;
     center.y = (m_height * m_scale.y - m_mouse.y * m_scale.y - (m_canvasOffsetHeight)) / m_zoom;
-    
+    return center;
+}
+
+void App::draw(){
+    // center click pos on canvas mouse * scale - offsetst all / by zoom scale
+    vec2f center = mouseToPixels();
     static vec2f prevCenter = center;
 
     if(!m_mouseLeftDown || ImGui::GetIO().WantCaptureMouse){ //if not click set prev + return
@@ -290,8 +296,13 @@ void App::renderUI(){
         ImGui::OpenPopup("New Canvas");
     if(ImGui::BeginPopupModal("New Canvas")){
         static int w = m_canvas.getWidth(), h = m_canvas.getHeight();
+        
         ImGui::InputInt("Width", &w);
         ImGui::InputInt("Height", &h);
+
+        if(ImGui::Button("swap"))
+            std::swap(w,h);
+
         if(ImGui::Button("OK")){
             m_canvas.newPixelBuffer(w, h);
             ImGui::CloseCurrentPopup();

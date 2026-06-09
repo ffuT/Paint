@@ -8,6 +8,10 @@ delete / savestates ctrl z + y
 
 04-06-26
 
+new canvas with ctrl n
+
+09-06-26
+
 Still TODO:
 
 optimize savestate snapshots (diffs or mbr's) 

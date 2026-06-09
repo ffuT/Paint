@@ -30,8 +30,8 @@ class Canvas{
 
     // snapshot var
     int currentSnapshot = 0;
-    const int maxSnapshots = 20;
+    const int maxSnapshots = 15; 
     int currentSnapDepth = 0;
-    std::vector<unsigned int*> snapShots;
+    std::vector<unsigned int*> snapShots; // 15*1920*1080*4 ~ 118MB
 
 };

@@ -43,6 +43,8 @@ class App{
     void drag();
     void draw();
 
+    vec2f mouseToPixels();
+
     // input control
     bool m_CTRLDown = false;
     bool m_SHIFTDown = false;
