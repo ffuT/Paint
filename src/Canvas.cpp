@@ -3,15 +3,19 @@
 #include "math.h"
 #include <cstring>
 
-Canvas::Canvas(unsigned int w, unsigned int h) : 
-    m_canvasWidth(w), m_canvasHeight(h){
-    snapShots = std::vector<unsigned int*>(maxSnapshots, nullptr);
-    pixels = new unsigned int[w * h];
+Canvas::Canvas(unsigned int w, unsigned int h) :
+    m_canvasWidth(w), m_canvasHeight(h),
+    snapShots(maxSnapshots, nullptr),
+    pixels(new unsigned int[w * h]){
     clearCanvas();
 }
 
 Canvas::~Canvas(){
     delete[] pixels;
+    for(int i = 0; i < maxSnapshots; i++){ // cleanup the snapshots
+        if(snapShots[i] != nullptr)
+            delete[] snapShots[i];
+    }
 }
 
 void Canvas::saveSnapshot(){
@@ -83,7 +87,9 @@ void Canvas::newPixelBuffer(int w, int h){
     m_canvasHeight = h;
 
     for(int i = 0; i < maxSnapshots; i++){ // cleanup the snapshots
-        if(snapShots[i] != nullptr)
+        if(snapShots[i] != nullptr){
             delete[] snapShots[i];
+            snapShots[i] = nullptr;
+        }
     }
 }

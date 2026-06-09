@@ -48,6 +48,8 @@ class App{
     bool m_SHIFTDown = false;
     bool m_mouseLeftDown = false;
     bool m_mouseRightDown = false;
+    bool m_openCanvasPopup = false;
+    bool m_ImGuiCaptureMouse = false;
     vec2f m_mouse;
     vec2f m_dragStart;
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "Utils.h"
 #include "Brush.h"
 

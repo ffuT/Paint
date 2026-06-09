@@ -92,6 +92,9 @@ void App::setKey(int key, int action){ // action: click = 1, release = 0
             case GLFW_KEY_Y: // ctrly
                 if(m_CTRLDown) m_canvas.goToNextSnap();
             break;
+            case GLFW_KEY_N:
+                if(m_CTRLDown) m_openCanvasPopup = true;
+            break;
         }
     }
 }
@@ -111,7 +114,8 @@ void App::setMouseDown(int button, bool in){
         m_dragStart = m_mouse;
         break;
     }
-    if(button == GLFW_MOUSE_BUTTON_LEFT && in == 0){
+
+    if(!m_ImGuiCaptureMouse && (button == GLFW_MOUSE_BUTTON_LEFT && in == 0)){
         m_canvas.saveSnapshot();
     }
 }
@@ -254,7 +258,6 @@ void App::draw(){
         return;
     }
     m_canvas.draw(center, prevCenter, m_brush);
-
     prevCenter = center;
 }
 
@@ -262,6 +265,7 @@ void App::renderUI(){
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+    m_ImGuiCaptureMouse = ImGui::GetIO().WantCaptureMouse;
     
     ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiCond_Always);
     ImGui::SetNextWindowSize(ImVec2(m_width+5, 140), ImGuiCond_Always);
@@ -281,6 +285,25 @@ void App::renderUI(){
         m_brush.setRadius(radius);
 
     }
+
+    if(m_openCanvasPopup)
+        ImGui::OpenPopup("New Canvas");
+    if(ImGui::BeginPopupModal("New Canvas")){
+        static int w = m_canvas.getWidth(), h = m_canvas.getHeight();
+        ImGui::InputInt("Width", &w);
+        ImGui::InputInt("Height", &h);
+        if(ImGui::Button("OK")){
+            m_canvas.newPixelBuffer(w, h);
+            ImGui::CloseCurrentPopup();
+        } 
+        ImGui::SameLine();       
+        if(ImGui::Button("Cancel")){
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+        m_openCanvasPopup = false;
+    }
+
     ImGui::End();
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
