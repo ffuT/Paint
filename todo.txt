@@ -14,7 +14,11 @@ new canvas with ctrl n
 
 Still TODO:
 
-optimize savestate snapshots (diffs or mbr's) 
+more preset colors
+
+more brushtypes
+
+optimize savestate snapshots (diffs only)
 
 fill tool
 

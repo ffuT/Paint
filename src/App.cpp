@@ -9,6 +9,8 @@
 
 #include <cstdio>
 #include <math.h>
+#include <string>
+#include <string_view>
 #include <utility>
 
 void framebufferSizeCallback(GLFWwindow* window, int w, int h) {
@@ -235,9 +237,8 @@ void App::updateScroll(double xoffset, double yoffset){
         m_zoom *= (1.0f + yoffset * 0.1f);
         int CW = m_canvas.getWidth();
         const int magic = CW / (CW / (CW / 220)); // magic zoom lvl? larger gives broken zoom
-        if(m_zoom >= magic){ 
-            m_zoom = magic;
-        }
+        if(m_zoom >= magic) m_zoom = magic;
+        if(m_zoom <= .1) m_zoom = .1;
         // not perfect but its ok
         m_canvasOffsetWidth -= ((double) CW/2) * (m_zoom - oldzoom);
         m_canvasOffsetHeight -= ((double) m_canvas.getHeight()/2) * (m_zoom - oldzoom);
@@ -265,59 +266,6 @@ void App::draw(){
     }
     m_canvas.draw(center, prevCenter, m_brush);
     prevCenter = center;
-}
-
-void App::renderUI(){
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-    m_ImGuiCaptureMouse = ImGui::GetIO().WantCaptureMouse;
-    
-    ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(m_width+5, 140), ImGuiCond_Always);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    ImGui::Begin("stuff", nullptr, m_flags);
-    {
-        // color picker
-        static ImVec4 col = ImGui::ColorConvertU32ToFloat4(m_brush.getColor());
-        ImGui::ColorEdit4("color picker", (float*) &col, ImGuiColorEditFlags_NoInputs);
-        m_brush.setColor(ImGui::ColorConvertFloat4ToU32(col));
-
-        ImGui::SameLine();
-
-        // radius picker
-        float radius = m_brush.getRadius();
-        ImGui::SliderFloat("brush size", &radius, 1.0f, 50.0f, "%.1f");
-        m_brush.setRadius(radius);
-
-    }
-
-    if(m_openCanvasPopup)
-        ImGui::OpenPopup("New Canvas");
-    if(ImGui::BeginPopupModal("New Canvas")){
-        static int w = m_canvas.getWidth(), h = m_canvas.getHeight();
-        
-        ImGui::InputInt("Width", &w);
-        ImGui::InputInt("Height", &h);
-
-        if(ImGui::Button("swap"))
-            std::swap(w,h);
-
-        if(ImGui::Button("OK")){
-            m_canvas.newPixelBuffer(w, h);
-            ImGui::CloseCurrentPopup();
-        } 
-        ImGui::SameLine();       
-        if(ImGui::Button("Cancel")){
-            ImGui::CloseCurrentPopup();
-        }
-        ImGui::EndPopup();
-        m_openCanvasPopup = false;
-    }
-
-    ImGui::End();
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void App::render(){
@@ -379,4 +327,89 @@ void App::createShader(){
 
     glDeleteShader(vert);
     glDeleteShader(frag);
+}
+
+void App::renderUI(){
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    m_ImGuiCaptureMouse = ImGui::GetIO().WantCaptureMouse;
+    
+    ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(m_width+10, 140), ImGuiCond_Always);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::Begin("stuff", nullptr, m_flags);
+    {
+        // color picker
+        static ImVec4 col = ImGui::ColorConvertU32ToFloat4(m_brush.getColor());
+        ImGui::Text("Color picker");
+        ImGui::SameLine();
+        ImGui::ColorEdit4("##color picker", (float*) &col, ImGuiColorEditFlags_NoInputs);
+
+        ImGui::SameLine();
+        ImGui::Text(" ");
+        ImGui::SameLine();
+        if(ImGui::ColorButton("##color1", ImGui::ColorConvertU32ToFloat4(Color::Black)))
+            col = ImGui::ColorConvertU32ToFloat4(Color::Black);
+        ImGui::SameLine();
+        if(ImGui::ColorButton("##color2", ImGui::ColorConvertU32ToFloat4(Color::Red)))
+            col = ImGui::ColorConvertU32ToFloat4(Color::Red);
+        ImGui::SameLine();
+        if(ImGui::ColorButton("##color3", ImGui::ColorConvertU32ToFloat4(Color::Blue)))
+            col = ImGui::ColorConvertU32ToFloat4(Color::Blue);
+        ImGui::SameLine();
+        if(ImGui::ColorButton("##color4", ImGui::ColorConvertU32ToFloat4(Color::Green)))
+            col = ImGui::ColorConvertU32ToFloat4(Color::Green);
+
+        m_brush.setColor(ImGui::ColorConvertFloat4ToU32(col));
+
+        // radius picker
+        float radius = m_brush.getRadius();
+        ImGui::SetNextItemWidth(200);
+        ImGui::SliderFloat("brush size", &radius, 1.0f, 50.0f, "%.1f");
+        m_brush.setRadius(radius);
+    }
+
+    if(m_openCanvasPopup)
+        ImGui::OpenPopup("New Canvas");
+    if(ImGui::BeginPopupModal("New Canvas")){
+        static int w = m_canvas.getWidth(), h = m_canvas.getHeight();
+        
+        ImGui::InputInt("Width", &w);
+        ImGui::InputInt("Height", &h);
+
+        if(ImGui::Button("swap"))
+            std::swap(w,h);
+
+        if(ImGui::Button("OK")){
+            m_canvas.newPixelBuffer(w, h);
+            ImGui::CloseCurrentPopup();
+        } 
+        ImGui::SameLine();       
+        if(ImGui::Button("Cancel")){
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+        m_openCanvasPopup = false;
+    }
+    ImGui::End();
+
+    {   // bottom tool bar
+        ImGui::SetNextWindowPos(ImVec2(0,m_height-30), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(m_width+10, 30), ImGuiCond_Always);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        
+        ImGui::Begin("info", nullptr, m_flags);
+        
+        ImGui::Text("(%d,%d)", (int) mouseToPixels().x, (int) mouseToPixels().y);
+        ImGui::SameLine();
+        ImGui::Text("(%d,%d)", m_canvas.getWidth(), m_canvas.getHeight());
+        ImGui::SameLine(m_width-100);
+        ImGui::Text("(%.0f %%)", m_zoom*100);
+        
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
 }
