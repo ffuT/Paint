@@ -7,7 +7,7 @@ Canvas::Canvas(unsigned int w, unsigned int h) :
     m_canvasWidth(w), m_canvasHeight(h),
     snapShots(maxSnapshots, nullptr),
     pixels(new unsigned int[w * h]){
-    clearCanvas();
+    clearCanvas(Color::White);
 }
 
 Canvas::~Canvas(){
@@ -59,9 +59,9 @@ void Canvas::goToNextSnap(){
     std::memcpy(pixels, snapShots[currentSnapshot], m_canvasWidth * m_canvasHeight * sizeof(unsigned int));
 }
 
-void Canvas::clearCanvas(){
+void Canvas::clearCanvas(const unsigned int color){
     for(int i = 0; i < m_canvasHeight * m_canvasWidth; i++){
-        pixels[i] = Color::White;
+        pixels[i] = color;
     }
     saveSnapshot();
 }
@@ -77,11 +77,11 @@ void Canvas::draw(vec2f c, vec2f cprev, Brush& brush){
     }
 }
 
-void Canvas::newPixelBuffer(int w, int h){
+void Canvas::newPixelBuffer(int w, int h, const unsigned int clearColor){
     delete[] pixels;
     pixels = new unsigned int[w * h];
     for(int i = 0; i < w * h; i++){
-        pixels[i] = Color::White;
+        pixels[i] = clearColor;
     }
     m_canvasWidth = w;
     m_canvasHeight = h;

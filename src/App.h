@@ -56,6 +56,7 @@ class App{
     vec2f m_dragStart;
 
     // canvas var
+    bool m_clearAlhpa = false;
     float m_canvasOffsetWidth, m_canvasOffsetHeight;
     double m_zoom = 1.0f;
     vec2f m_scale;

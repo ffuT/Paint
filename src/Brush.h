@@ -5,6 +5,7 @@
 
 namespace Color {
     // unsigned int color = AABBGGRR
+    constexpr unsigned int noBG = 0x00000000;
     constexpr unsigned int White = 0xffffffff;
     constexpr unsigned int Black = 0xff000000;
     constexpr unsigned int Red = 0xff0000ff;

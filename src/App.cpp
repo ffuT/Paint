@@ -9,17 +9,14 @@
 
 #include <cstdio>
 #include <math.h>
-#include <string>
-#include <string_view>
-#include <utility>
 
-void framebufferSizeCallback(GLFWwindow* window, int w, int h) {
-    App* app = (App*) glfwGetWindowUserPointer(window);
-    if(!app) return;
-    app->m_canvas.newPixelBuffer(w, h);
-    glViewport(0, 0, w, h);
-    printf("resized canvas to %dx%d \n", w, h);
-}
+// void framebufferSizeCallback(GLFWwindow* window, int w, int h) {
+//     App* app = (App*) glfwGetWindowUserPointer(window);
+//     if(!app) return;
+//     app->m_canvas.newPixelBuffer(w, h, (app->m_clearAlhpa & Color::noBG : Color::White));
+//     glViewport(0, 0, w, h);
+//     printf("resized canvas to %dx%d \n", w, h);
+// }
 
 void windowResizeCallback(GLFWwindow* window, int w, int h){
     App* app = (App*) glfwGetWindowUserPointer(window);
@@ -88,7 +85,7 @@ void App::setKey(int key, int action){ // action: click = 1, release = 0
                 m_brush.nextBrush();
             break;
             case GLFW_KEY_C:
-                m_canvas.clearCanvas();
+                if(m_CTRLDown) m_canvas.clearCanvas( m_clearAlhpa ? Color::noBG : Color::White);
             break;
             case GLFW_KEY_Z: // ctrlz
                 if(m_CTRLDown) m_canvas.goToLastSnap();
@@ -272,6 +269,11 @@ void App::render(){
     glBindTexture(GL_TEXTURE_2D, m_tex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_canvas.getWidth(), m_canvas.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, m_canvas.getPixels());
     
+    int loc = glGetUniformLocation(m_shader, "u_canvasWidth");
+    glUniform1f(loc, (float)m_canvas.getWidth());
+    loc= glGetUniformLocation(m_shader, "u_canvasHeight");
+    glUniform1f(loc, (float)m_canvas.getHeight());
+
     glViewport(m_canvasOffsetWidth, m_canvasOffsetHeight, m_canvas.getWidth() * m_zoom, m_canvas.getHeight() * m_zoom);
 
     glUseProgram(m_shader);
@@ -307,9 +309,15 @@ void App::createShader(){
     const char* fragSrc = R"(
         #version 330 core
         uniform sampler2D tex;
+        uniform float u_canvasWidth;
+        uniform float u_canvasHeight;
         in vec2 vUV;
         out vec4 color;
-        void main() { color = texture(tex, vUV); }
+        vec2 cell = floor(vUV * vec2(u_canvasWidth / u_canvasHeight, 1.0) * 32);
+        float check = mod(cell.x + cell.y, 2.0);
+        vec3 checkcol = mix(vec3(0.3),vec3(0.7),check);
+        vec4 texcol = texture(tex, vUV);
+        void main() { color = mix(vec4(checkcol, 1.0), texcol, texcol.a);}
     )";
 
     GLuint vert = glCreateShader(GL_VERTEX_SHADER);
@@ -374,15 +382,21 @@ void App::renderUI(){
         ImGui::OpenPopup("New Canvas");
     if(ImGui::BeginPopupModal("New Canvas")){
         static int w = m_canvas.getWidth(), h = m_canvas.getHeight();
+        static bool same = false;
         
         ImGui::InputInt("Width", &w);
+        ImGui::BeginDisabled(same);
         ImGui::InputInt("Height", &h);
+        ImGui::EndDisabled();
 
-        if(ImGui::Button("swap"))
-            std::swap(w,h);
-
+        //if(ImGui::Button("swap"))
+            //std::swap(w,h);
+        //ImGui::SameLine();
+        ImGui::Checkbox("Square", &same);
+        ImGui::Checkbox("Transparent", &m_clearAlhpa);
+        
         if(ImGui::Button("OK")){
-            m_canvas.newPixelBuffer(w, h);
+            m_canvas.newPixelBuffer(w, h, m_clearAlhpa ? Color::noBG : Color::White);
             ImGui::CloseCurrentPopup();
         } 
         ImGui::SameLine();       

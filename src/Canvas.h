@@ -10,9 +10,9 @@ class Canvas{
     ~Canvas();
 
     void draw(vec2f c, vec2f cprev, Brush& brush);
-    void clearCanvas();
+    void clearCanvas(const unsigned int color);
     
-    void newPixelBuffer(int w, int h);
+    void newPixelBuffer(int w, int h, const unsigned int clearColor);
     
     void saveSnapshot();
     void goToLastSnap();
