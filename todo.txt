@@ -12,9 +12,13 @@ new canvas with ctrl n
 
 09-06-26
 
-Still TODO:
+visable alpha
 
 more preset colors
+
+12-06-26
+
+Still TODO:
 
 more brushtypes
 

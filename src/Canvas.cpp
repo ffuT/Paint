@@ -48,7 +48,7 @@ void Canvas::goToNextSnap(){
     currentSnapshot++;
     if(currentSnapshot >= maxSnapshots) // cant go forward
         currentSnapshot = 0;
-    if(currentSnapDepth <= 0 || snapShots[currentSnapshot] == nullptr){
+    if(currentSnapDepth <= 1 || snapShots[currentSnapshot] == nullptr){
         currentSnapshot--;
         if(currentSnapshot < 0) 
             currentSnapshot = maxSnapshots-1;
