@@ -22,13 +22,15 @@ project "Paint"
     files { "src/vendor/glad/src/glad.c", "src/vendor/imgui/*" , "src/**.hpp", "src/**.h", "src/**.cpp" }
 
     includedirs { "src/**", "Dependencies/glfw/include", "src/vendor/**" }
+    
+    libdirs { "src/vendor/glfw/lib/", "src/vendor/lua/lib/" }
+    links {"glfw3", "lua"}
 
     filter "system:windows"                             
-        libdirs { "Dependencies/glfw/lib-vc2022" }
-        links { "glfw3", "opengl32" }
+        links { "opengl32"}
 
     filter "system:linux"
-                links { "glfw", "dl",  "GL" }
+        links { "dl", "GL" }
 
     filter "configurations:Debug"
         defines { "DEBUG" }

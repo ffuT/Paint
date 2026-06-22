@@ -12,7 +12,7 @@ class App{
     App();
     ~App();
     
-    bool initialize(); // return true on success
+    bool initialize(int argc, char* argv[]); // return true on success
     void start();
     
     void setWindowBounds(int, int);
@@ -31,7 +31,7 @@ class App{
     double getMouseX() {return m_mouse.x;}
     double getMouseY() {return m_mouse.y;}
 
-    Canvas m_canvas = Canvas(1920, 1080);
+    Canvas m_canvas = Canvas(1,1);
     Brush m_brush;
     private:
 

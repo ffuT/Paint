@@ -3,9 +3,11 @@
 #include "Canvas.h"
 
 #include <GLFW/glfw3.h>
+#include <filesystem>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
+#include <lua.hpp>
 
 #include <cstdio>
 #include <math.h>
@@ -60,8 +62,6 @@ m_flags(ImGuiWindowFlags_NoTitleBar |
         ImGuiWindowFlags_NoBringToFrontOnFocus) {
     m_scale.x = 1.0f;
     m_scale.y = 1.0f;
-    m_width = 1920;
-    m_height = 1080;
     printf("Creating App!\n");
 }
 
@@ -162,8 +162,24 @@ void App::start(){
     glfwTerminate();
 }
 
-bool App::initialize(){
+bool App::initialize(int argc, char* argv[]){
     printf("Initializing App!\n");
+    
+    // get path to load config correctly
+    std::filesystem::path dir = std::filesystem::canonical(argv[0]).parent_path();
+    std::string confpath = (dir / "../../config/config.lua");
+
+    lua_State* L = loadconfig(confpath.c_str());
+
+    loadint(L, "Width", m_height);
+    loadint(L, "Heigth", m_height);
+    loadbool(L, "AlphaAsClear", m_clearAlhpa);
+    {
+        int w,h;
+        loadint(L, "CWidth", w);
+        loadint(L, "CHeigth", h);
+        m_canvas.newPixelBuffer(w, h, m_clearAlhpa ? Color::noBG : Color::White);
+    }
 
     if(!glfwInit()){
         printf("error initializing glfw\n");

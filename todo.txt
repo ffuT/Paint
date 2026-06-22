@@ -18,11 +18,16 @@ more preset colors
 
 12-06-26
 
+fixed dependencies (still missing lua.lib for MSVC)
+
+lua config stuff
+
 Still TODO:
 
 more brushtypes
 
 optimize savestate snapshots (diffs only)
+fix redo maxdepth after undo
 
 fill tool
 
