@@ -1,6 +1,6 @@
 # Paint
 
-A simple drawing app inspired by MS Paint, built with C++ using GLFW, GLAD, and Dear ImGui
+A simple drawing app inspired by MS Paint, built with C++ using GLFW, GLAD, Dear ImGui, and Lua (all statically linked)
 
 ## About
 
@@ -11,17 +11,17 @@ I created this app to make a lightweight drawing tool for quick simple drawings.
 - Basic ImGui color selection
 - Undo/Redo with `CTRL` `Z` and `Y`
 - Zooming and Panning on scroll
+- Custom lua config file
 - More features coming...
 
 ## Installation & Setup
 ### Prerequisites
-- C++ compiler (C++11 or later)
+- C++ compiler (C++17 or later)
 - [Premake5](https://premake.github.io/)
-- glfw
 
 for arch do
 ```bash
-sudo pacman -S glfw premake
+sudo pacman -S premake
 ```
 
 ### Build & Run
