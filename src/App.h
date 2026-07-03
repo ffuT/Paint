@@ -5,6 +5,7 @@
 
 #include "Canvas.h"
 #include "Brush.h"
+#include "Renderer.h"
 #include "imgui/imgui.h"
 
 class App{
@@ -36,11 +37,9 @@ class App{
     Brush m_brush;
     private:
 
-    void createVAO();
-    void createShader();
+    void loadLuaconf(const char*);
     void render();
     void renderUI();
-
     
     void drag();
     void draw();
@@ -58,24 +57,19 @@ class App{
     vec2f m_dragStart;
 
     // canvas var
-    bool m_clearAlhpa = false;
-    float m_canvasOffsetWidth=0, m_canvasOffsetHeight=0;
-    double m_zoom = 1.0f;
+    float m_canvasOffsetWidth = 0;
+    float m_canvasOffsetHeight = 0;
+    float m_zoom = 1.0f;
     vec2f m_scale;
     
-    // window + GL
-    int m_width, m_height;
-    int m_fbwidth, m_fbheight;
-    GLFWwindow* m_window;
-    GLuint m_tex, m_shader, m_vao;
-    const ImGuiWindowFlags m_flags;
-};
+    //config vars
+    bool m_clearAlhpa = false;
+    float m_MaxZoom = 10;
 
-static constexpr float verts[] = {
-    -1,-1, 0,1,
-     1,-1, 1,1,
-     1, 1, 1,0,
-    -1,-1, 0,1,
-     1, 1, 1,0,
-    -1, 1, 0,0,
+    // window + GL
+    Renderer m_renderer;
+    int m_width = 800, m_height = 800; // OS window size
+    int m_fbwidth, m_fbheight; // raw window pix size
+    GLFWwindow* m_window;
+    const ImGuiWindowFlags m_flags;
 };

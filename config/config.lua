@@ -6,3 +6,7 @@ Heigth = 720
 CWidth = 1280
 CHeigth = 720
 AlphaAsClear = false;
+
+-- utility
+MaxZoom = 20.0
+StartZoom = 0.8

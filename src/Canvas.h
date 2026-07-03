@@ -20,7 +20,7 @@ class Canvas{
     
     unsigned int getWidth() const {return m_canvasWidth;}
     unsigned int getHeight() const {return m_canvasHeight;}
-    const unsigned int* getPixels(){return pixels;}
+    const unsigned int* getPixels() const {return pixels;}
     
     private:
     // canvas var

@@ -1,12 +1,15 @@
 #include "App.h"
 #include "Brush.h"
 #include "Canvas.h"
+#include "Renderer.h"
+#include "Utils.h"
 
 #include <GLFW/glfw3.h>
 #include <filesystem>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
+#include <lua.h>
 #include <lua.hpp>
 
 #include <cstdio>
@@ -136,13 +139,9 @@ void App::start(){
     // get window scale from system
     glfwGetWindowContentScale(m_window, &m_scale.x,&m_scale.y);
     // canvas offset pos on screen:
-    m_canvasOffsetWidth = m_scale.x*m_width/2 - (float) m_canvas.getWidth()/2;
-    m_canvasOffsetHeight = m_scale.y*m_height/2 - (float) m_canvas.getHeight()/2;
-    m_canvasOffsetHeight -= (float) m_height * 1.25;
     
-    m_CTRLDown = true;
-    updateScroll(0, -1.33);
-    m_CTRLDown = false;
+    m_canvasOffsetWidth = (float) m_fbwidth/2 - (float) m_canvas.getWidth()/2 * m_zoom;
+    m_canvasOffsetHeight = (float) -m_fbheight/1.8 - (float) m_canvas.getHeight()/2 * m_zoom;
 
     while(!glfwWindowShouldClose(m_window)) {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -163,25 +162,31 @@ void App::start(){
     glfwTerminate();
 }
 
-bool App::initialize(int argc, char* argv[]){
-    printf("Initializing App!\n");
-    
-    // get path to load config correctly
-    std::filesystem::path dir = std::filesystem::canonical(argv[0]).parent_path();
-    std::string confpath = (dir / "../../config/config.lua");
-
-    lua_State* L = loadconfig(confpath.c_str());
+void App::loadLuaconf(const char* path){
+    lua_State* L = loadconfig(path);
 
     loadint(L, "Width", m_width);
     loadint(L, "Heigth", m_height);
     loadbool(L, "AlphaAsClear", m_clearAlhpa);
-    printf("w: %d h: %d\n",m_width, m_height);
     {
         int w,h;
         loadint(L, "CWidth", w);
         loadint(L, "CHeigth", h);
         m_canvas.newPixelBuffer(w, h, m_clearAlhpa ? Color::noBG : Color::White);
     }
+    loadfloat(L, "MaxZoom", m_MaxZoom);
+    loadfloat(L, "StartZoom", m_zoom);
+    
+    lua_close(L);
+}
+
+bool App::initialize(int argc, char* argv[]){
+    printf("Initializing App!\n");
+    
+    // get path to load config correctly
+    std::filesystem::path dir = std::filesystem::canonical(argv[0]).parent_path();
+    std::string confpath = (dir / "../../config/config.lua");
+    loadLuaconf(confpath.c_str());
 
     if(!glfwInit()){
         printf("error initializing glfw\n");
@@ -204,17 +209,7 @@ bool App::initialize(int argc, char* argv[]){
         return false;
     }
 
-    createShader();
-    createVAO();
-    
-    // gen the texture
-    glGenTextures(1, &m_tex);
-    glBindTexture(GL_TEXTURE_2D, m_tex);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    m_renderer.init();
     
     updateViewport();
     
@@ -251,7 +246,7 @@ void App::updateScroll(double xoffset, double yoffset){
         double oldzoom = m_zoom;
         m_zoom *= (1.0f + yoffset * 0.1f);
         int CW = m_canvas.getWidth();
-        if(m_zoom >= 10) m_zoom = 10;
+        if(m_zoom >= m_MaxZoom) m_zoom = m_MaxZoom;
         if(m_zoom <= .1) m_zoom = .1;
         // not perfect but its ok
         m_canvasOffsetWidth -= ((double) CW/2) * (m_zoom - oldzoom);
@@ -283,36 +278,13 @@ void App::draw(){
 }
 
 void App::render(){
-    glBindTexture(GL_TEXTURE_2D, m_tex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_canvas.getWidth(), m_canvas.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, m_canvas.getPixels());
-    glUseProgram(m_shader);
-    
-    glUniform1f(glGetUniformLocation(m_shader, "u_canvasWidth"), (float)m_canvas.getWidth());
-    glUniform1f(glGetUniformLocation(m_shader, "u_canvasHeight"), (float)m_canvas.getHeight());
-    
-    glUniform1f(glGetUniformLocation(m_shader, "u_zoom"), m_zoom);
-    
-    glUniform2f(glGetUniformLocation(m_shader, "u_offset"), m_canvasOffsetWidth, m_canvasOffsetHeight);
-    glUniform2f(glGetUniformLocation(m_shader, "u_resolution"), (float)m_fbwidth, (float)m_fbheight);
-
-    glBindVertexArray(m_vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-}
-
-void App::createVAO(){
-    GLuint vbo;
-    glGenVertexArrays(1, &m_vao);
-    glGenBuffers(1, &vbo);
-
-    glBindVertexArray(m_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    m_renderer.updateTex(m_canvas);
+    m_renderer.render({
+        .offset = {m_canvasOffsetWidth,m_canvasOffsetHeight},
+        .zoom = m_zoom,
+        .resolution = {(float) m_fbwidth, (float) m_fbheight},
+        .canvasRes = {(float) m_canvas.getWidth(), (float) m_canvas.getHeight() }
+    });
 }
 
 void App::updateViewport(){
@@ -321,60 +293,6 @@ void App::updateViewport(){
     glViewport(0,0,fbw,fbh);
     m_fbwidth = fbw;    
     m_fbheight = fbh;
-}
-
-void App::createShader(){
-    const char* vertSrc = R"(
-        #version 330 core
-        layout(location=0) in vec2 pos;
-        layout(location=1) in vec2 uv;
-        out vec2 vUV;
-        void main() { gl_Position = vec4(pos, 0, 1); vUV = vec2(uv.x, -uv.y); }
-    )";
-
-    const char* fragSrc = R"(
-        #version 330 core
-        uniform sampler2D tex;
-        uniform float u_canvasWidth;
-        uniform float u_canvasHeight;
-        uniform float u_zoom;
-        uniform vec2 u_offset;
-        uniform vec2 u_resolution;
-        in vec2 vUV;
-        out vec4 color;
-        
-        void main() { 
-            vec2 fragpix = vUV * u_resolution;
-            vec2 canvaspix = (fragpix - u_offset) / u_zoom;
-            if(canvaspix.x < 0.0 || canvaspix.x >= u_canvasWidth || canvaspix.y < 0.0 || canvaspix.y >= u_canvasHeight){
-                color = vec4(0.1, 0.1, 0.1, 0.1);
-                return;
-            }
-
-            vec2 cell = floor(vUV * vec2(u_canvasWidth / u_canvasHeight, 1.0) * 32);
-            float check = mod(cell.x + cell.y, 2.0);
-            vec3 checkcol = mix(vec3(0.3),vec3(0.7),check);
-            vec2 uv = canvaspix / vec2(u_canvasWidth, u_canvasHeight);
-            vec4 texcol = texture(tex, uv);
-            color = mix(vec4(checkcol, 1.0), texcol, texcol.a);
-        }
-    )";
-
-    GLuint vert = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vert, 1, &vertSrc, nullptr);
-    glCompileShader(vert);
-
-    GLuint frag = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(frag, 1, &fragSrc, nullptr);
-    glCompileShader(frag);
-
-    m_shader = glCreateProgram();
-    glAttachShader(m_shader, vert);
-    glAttachShader(m_shader, frag);
-    glLinkProgram(m_shader);
-
-    glDeleteShader(vert);
-    glDeleteShader(frag);
 }
 
 void App::renderUI(){
