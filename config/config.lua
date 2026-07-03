@@ -5,7 +5,7 @@ Heigth = 720
 -- canvas
 CWidth = 1280
 CHeigth = 720
-AlphaAsClear = false;
+AlphaAsClear = false
 
 -- utility
 MaxZoom = 20.0

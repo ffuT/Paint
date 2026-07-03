@@ -22,6 +22,14 @@ fixed dependencies (still missing lua.lib for MSVC)
 
 lua config stuff
 
+03-07-26
+
+moves zoom and panning to m_shader
+
+abstracted rendering into own class
+
+
+
 Still TODO:
 
 lua stuff

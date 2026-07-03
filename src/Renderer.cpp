@@ -1,12 +1,13 @@
+#include "App.h"
 #include "Canvas.h"
 #include "Renderer.h"
 
-Renderer::Renderer(){
+Renderer::Renderer(){}
 
-}
-
-Renderer::~Renderer(){
-    
+void Renderer::cleanup(){
+    glDeleteProgram(m_shader);
+    glDeleteTextures(1, &m_tex);
+    glDeleteVertexArrays(1, &m_vao);
 }
 
 void Renderer::updateTex(const Canvas& canvas){

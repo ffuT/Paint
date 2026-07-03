@@ -156,6 +156,7 @@ void App::start(){
         glfwWaitEvents();
     }
 
+    m_renderer.cleanup();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
@@ -302,7 +303,7 @@ void App::renderUI(){
     m_ImGuiCaptureMouse = ImGui::GetIO().WantCaptureMouse;
     
     ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(m_width+10, 140), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(m_width, 140), ImGuiCond_Always);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::Begin("stuff", nullptr, m_flags);
     {

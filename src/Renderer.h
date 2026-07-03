@@ -13,9 +13,9 @@ struct renderParams{
 class Renderer{
 public:
 Renderer();
-~Renderer();
 
 void init();
+void cleanup();
 void updateTex(const Canvas&);
 void render(const renderParams&);
 
