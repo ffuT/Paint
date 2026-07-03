@@ -15,6 +15,7 @@ class App{
     bool initialize(int argc, char* argv[]); // return true on success
     void start();
     
+    void updateViewport();
     void setWindowBounds(int, int);
     void setFrameBounds(int, int);
     
@@ -39,6 +40,7 @@ class App{
     void createShader();
     void render();
     void renderUI();
+
     
     void drag();
     void draw();
@@ -57,12 +59,13 @@ class App{
 
     // canvas var
     bool m_clearAlhpa = false;
-    float m_canvasOffsetWidth, m_canvasOffsetHeight;
+    float m_canvasOffsetWidth=0, m_canvasOffsetHeight=0;
     double m_zoom = 1.0f;
     vec2f m_scale;
     
     // window + GL
     int m_width, m_height;
+    int m_fbwidth, m_fbheight;
     GLFWwindow* m_window;
     GLuint m_tex, m_shader, m_vao;
     const ImGuiWindowFlags m_flags;
