@@ -142,7 +142,6 @@ void App::start(){
     // get window scale from system
     glfwGetWindowContentScale(m_window, &m_scale.x,&m_scale.y);
     // canvas offset pos on screen:
-    
     m_canvasOffsetWidth = (float) m_fbwidth/2 - (float) m_canvas.getWidth()/2 * m_zoom;
     m_canvasOffsetHeight = (float) -m_fbheight/1.8 - (float) m_canvas.getHeight()/2 * m_zoom;
 
@@ -180,7 +179,9 @@ void App::loadLuaconf(const char* path){
     }
     loadfloat(L, "MaxZoom", m_MaxZoom);
     loadfloat(L, "StartZoom", m_zoom);
-    
+
+    loadcolors(L, "Colors", m_customColors);
+
     lua_close(L);
 }
 
@@ -330,6 +331,13 @@ void App::renderUI(){
         ImGui::SameLine();
         if(ImGui::ColorButton("##color4", ImGui::ColorConvertU32ToFloat4(Color::Green)))
             col = ImGui::ColorConvertU32ToFloat4(Color::Green);
+        for(unsigned int i : m_customColors){
+            ImGui::SameLine();
+            ImGui::PushID(i);
+            if(ImGui::ColorButton("##colorx", ImGui::ColorConvertU32ToFloat4(i)))
+                col = ImGui::ColorConvertU32ToFloat4(i);
+            ImGui::PopID();
+        }
 
         m_brush.setColor(ImGui::ColorConvertFloat4ToU32(col));
 

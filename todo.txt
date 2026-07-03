@@ -28,12 +28,13 @@ moves zoom and panning to m_shader
 
 abstracted rendering into own class
 
+added missing .lib
 
+custom "default colors" from the config file, loop over a table perhaps?
 
 Still TODO:
 
 lua stuff
-custom "default colors" from the config file, loop over a table perhaps?
 custom brushtypes via scripting
 saving custom settings/remember last used sizes
 

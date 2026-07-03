@@ -65,6 +65,7 @@ class App{
     vec2f m_scale;
     
     //config vars
+    std::vector<unsigned int> m_customColors;
     bool m_clearAlhpa = false;
     float m_MaxZoom = 10;
 

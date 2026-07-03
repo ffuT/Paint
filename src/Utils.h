@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <lua.hpp>
+#include <vector>
 
 struct vec2f{
     float x;
@@ -38,6 +39,25 @@ inline bool isnil(lua_State* L, const char* var_name){
         return true;
     } 
     return false;
+}
+
+inline void loadcolors(lua_State* L, const char* var_name, std::vector<unsigned int>& var){
+    if(isnil(L, var_name))
+        return;
+    lua_getglobal(L, var_name);
+    if(!lua_istable(L, -1)){
+        luaerror(L, "variable is not a table: %s\n", var_name);
+        return;
+    }
+    lua_pushnil(L);
+    while(lua_next(L, -2) != 0) {
+        if (!lua_isnumber(L, -1)){
+            luaerror(L, "variable is not a number %s\n", lua_tostring(L, -2));
+            continue;
+        } 
+        var.push_back((unsigned int) lua_tointeger(L, -1));       
+        lua_pop(L, 1);
+    }
 }
 
 // modifies var to the loaded lua value if it is an int, else give error
