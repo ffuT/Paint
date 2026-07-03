@@ -186,8 +186,8 @@ bool App::initialize(int argc, char* argv[]){
     
     // get path to load config correctly
     std::filesystem::path dir = std::filesystem::canonical(argv[0]).parent_path();
-    std::string confpath = (dir / "../../config/config.lua");
-    loadLuaconf(confpath.c_str());
+    std::filesystem::path confpath = (dir / "../../config/config.lua");
+    loadLuaconf(confpath.string().c_str());
 
     if(!glfwInit()){
         printf("error initializing glfw\n");

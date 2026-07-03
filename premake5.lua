@@ -17,6 +17,7 @@ workspace "Paint"
 project "Paint"
     kind "ConsoleApp"
     language "C++"
+    cppdialect "C++20"
     targetdir "bin/%{cfg.buildcfg}"
 
     files { "src/vendor/glad/src/glad.c", "src/vendor/imgui/*" , "src/**.hpp", "src/**.h", "src/**.cpp" }

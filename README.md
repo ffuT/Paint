@@ -16,7 +16,7 @@ I created this app to make a lightweight drawing tool for quick simple drawings.
 
 ## Installation & Setup
 ### Prerequisites
-- C++ compiler (C++17 or later)
+- C++ compiler (C++20 or later)
 - [Premake5](https://premake.github.io/)
 
 for arch do

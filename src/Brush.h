@@ -1,7 +1,7 @@
 #pragma once
 
 #include <functional>
-#include <unordered_map>
+#include <map>
 
 namespace Color {
     // unsigned int color = AABBGGRR
@@ -41,7 +41,7 @@ class Brush{
     float brushRadius = 5.0f;
     unsigned int currentColor = Color::Black;
 
-    std::unordered_map<const brush, std::function<bool(int, int, int)>> brushmap = {
+    std::map<const brush, std::function<bool(int, int, int)>> brushmap = {
         { brush::NONE, [](int dx, int dy, int r) 
             {return false;}},
         { brush::circle, [](int dx, int dy, int r) 
