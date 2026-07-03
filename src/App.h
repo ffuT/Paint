@@ -47,6 +47,8 @@ class App{
     vec2f mouseToPixels();
 
     // input control
+    bool m_enterDown = false;
+    bool m_EscDown = false;
     bool m_CTRLDown = false;
     bool m_SHIFTDown = false;
     bool m_mouseLeftDown = false;

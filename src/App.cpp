@@ -9,7 +9,6 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
-#include <lua.h>
 #include <lua.hpp>
 
 #include <cstdio>
@@ -81,6 +80,10 @@ void App::setKey(int key, int action){ // action: click = 1, release = 0
         case GLFW_KEY_RIGHT_SHIFT:
             m_SHIFTDown = action;
         break;
+        case GLFW_KEY_ENTER:
+            m_enterDown = action;
+        case GLFW_KEY_ESCAPE:
+            m_EscDown = action;
     }
 
     if(action){ // only switch on click
@@ -354,12 +357,12 @@ void App::renderUI(){
         ImGui::Checkbox("Square", &same);
         ImGui::Checkbox("Transparent", &m_clearAlhpa);
         
-        if(ImGui::Button("OK")){
-            m_canvas.newPixelBuffer(w, h, m_clearAlhpa ? Color::noBG : Color::White);
+        if(ImGui::Button("OK") || m_enterDown){
+            m_canvas.newPixelBuffer(w, same ? w : h, m_clearAlhpa ? Color::noBG : Color::White);
             ImGui::CloseCurrentPopup();
         } 
         ImGui::SameLine();       
-        if(ImGui::Button("Cancel")){
+        if(ImGui::Button("Cancel") || m_EscDown){
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();
