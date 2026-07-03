@@ -24,6 +24,7 @@ void windowResizeCallback(GLFWwindow* window, int w, int h){
     App* app = (App*) glfwGetWindowUserPointer(window);
     if(!app) return;
     app->setWindowBounds(w, h);
+    app->updateViewport();
     printf("resized window to %dx%d \n", w, h);
 }
 
@@ -137,7 +138,7 @@ void App::start(){
     // canvas offset pos on screen:
     m_canvasOffsetWidth = m_scale.x*m_width/2 - (float) m_canvas.getWidth()/2;
     m_canvasOffsetHeight = m_scale.y*m_height/2 - (float) m_canvas.getHeight()/2;
-    m_canvasOffsetHeight -= (float) m_height/10;
+    m_canvasOffsetHeight -= (float) m_height * 1.25;
     
     m_CTRLDown = true;
     updateScroll(0, -1.33);
@@ -171,9 +172,10 @@ bool App::initialize(int argc, char* argv[]){
 
     lua_State* L = loadconfig(confpath.c_str());
 
-    loadint(L, "Width", m_height);
+    loadint(L, "Width", m_width);
     loadint(L, "Heigth", m_height);
     loadbool(L, "AlphaAsClear", m_clearAlhpa);
+    printf("w: %d h: %d\n",m_width, m_height);
     {
         int w,h;
         loadint(L, "CWidth", w);
@@ -214,7 +216,7 @@ bool App::initialize(int argc, char* argv[]){
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
-    glViewport(0, 0, m_canvas.getWidth(), m_canvas.getHeight());
+    updateViewport();
     
     //callbacks
     //glfwSetFramebufferSizeCallback(m_window, framebufferSizeCallback); // disable to lock canvas
@@ -249,8 +251,7 @@ void App::updateScroll(double xoffset, double yoffset){
         double oldzoom = m_zoom;
         m_zoom *= (1.0f + yoffset * 0.1f);
         int CW = m_canvas.getWidth();
-        const int magic = CW / (CW / (CW / 220)); // magic zoom lvl? larger gives broken zoom
-        if(m_zoom >= magic) m_zoom = magic;
+        if(m_zoom >= 10) m_zoom = 10;
         if(m_zoom <= .1) m_zoom = .1;
         // not perfect but its ok
         m_canvasOffsetWidth -= ((double) CW/2) * (m_zoom - oldzoom);
@@ -264,7 +265,7 @@ void App::updateScroll(double xoffset, double yoffset){
 vec2f App::mouseToPixels(){
     vec2f center; 
     center.x = (m_mouse.x * m_scale.x - (m_canvasOffsetWidth)) / m_zoom;
-    center.y = (m_height * m_scale.y - m_mouse.y * m_scale.y - (m_canvasOffsetHeight)) / m_zoom;
+    center.y = (m_height * m_scale.y - m_mouse.y * m_scale.y - (m_canvasOffsetHeight)) / m_zoom -m_fbheight/m_zoom;
     return center;
 }
 
@@ -284,15 +285,16 @@ void App::draw(){
 void App::render(){
     glBindTexture(GL_TEXTURE_2D, m_tex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_canvas.getWidth(), m_canvas.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, m_canvas.getPixels());
-    
-    int loc = glGetUniformLocation(m_shader, "u_canvasWidth");
-    glUniform1f(loc, (float)m_canvas.getWidth());
-    loc= glGetUniformLocation(m_shader, "u_canvasHeight");
-    glUniform1f(loc, (float)m_canvas.getHeight());
-
-    glViewport(m_canvasOffsetWidth, m_canvasOffsetHeight, m_canvas.getWidth() * m_zoom, m_canvas.getHeight() * m_zoom);
-
     glUseProgram(m_shader);
+    
+    glUniform1f(glGetUniformLocation(m_shader, "u_canvasWidth"), (float)m_canvas.getWidth());
+    glUniform1f(glGetUniformLocation(m_shader, "u_canvasHeight"), (float)m_canvas.getHeight());
+    
+    glUniform1f(glGetUniformLocation(m_shader, "u_zoom"), m_zoom);
+    
+    glUniform2f(glGetUniformLocation(m_shader, "u_offset"), m_canvasOffsetWidth, m_canvasOffsetHeight);
+    glUniform2f(glGetUniformLocation(m_shader, "u_resolution"), (float)m_fbwidth, (float)m_fbheight);
+
     glBindVertexArray(m_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
@@ -313,6 +315,14 @@ void App::createVAO(){
     glEnableVertexAttribArray(1);
 }
 
+void App::updateViewport(){
+    int fbw, fbh;
+    glfwGetFramebufferSize(m_window, &fbw, &fbh);
+    glViewport(0,0,fbw,fbh);
+    m_fbwidth = fbw;    
+    m_fbheight = fbh;
+}
+
 void App::createShader(){
     const char* vertSrc = R"(
         #version 330 core
@@ -327,13 +337,27 @@ void App::createShader(){
         uniform sampler2D tex;
         uniform float u_canvasWidth;
         uniform float u_canvasHeight;
+        uniform float u_zoom;
+        uniform vec2 u_offset;
+        uniform vec2 u_resolution;
         in vec2 vUV;
         out vec4 color;
-        vec2 cell = floor(vUV * vec2(u_canvasWidth / u_canvasHeight, 1.0) * 32);
-        float check = mod(cell.x + cell.y, 2.0);
-        vec3 checkcol = mix(vec3(0.3),vec3(0.7),check);
-        vec4 texcol = texture(tex, vUV);
-        void main() { color = mix(vec4(checkcol, 1.0), texcol, texcol.a);}
+        
+        void main() { 
+            vec2 fragpix = vUV * u_resolution;
+            vec2 canvaspix = (fragpix - u_offset) / u_zoom;
+            if(canvaspix.x < 0.0 || canvaspix.x >= u_canvasWidth || canvaspix.y < 0.0 || canvaspix.y >= u_canvasHeight){
+                color = vec4(0.1, 0.1, 0.1, 0.1);
+                return;
+            }
+
+            vec2 cell = floor(vUV * vec2(u_canvasWidth / u_canvasHeight, 1.0) * 32);
+            float check = mod(cell.x + cell.y, 2.0);
+            vec3 checkcol = mix(vec3(0.3),vec3(0.7),check);
+            vec2 uv = canvaspix / vec2(u_canvasWidth, u_canvasHeight);
+            vec4 texcol = texture(tex, uv);
+            color = mix(vec4(checkcol, 1.0), texcol, texcol.a);
+        }
     )";
 
     GLuint vert = glCreateShader(GL_VERTEX_SHADER);
