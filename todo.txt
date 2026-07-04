@@ -32,6 +32,10 @@ added missing .lib
 
 custom "default colors" from the config file, loop over a table perhaps?
 
+05-07-26
+
+fill tool
+
 Still TODO:
 
 lua stuff
@@ -43,7 +47,6 @@ more brushtypes
 optimize savestate snapshots (diffs only)
 fix redo maxdepth after undo
 
-fill tool
 
 copy paste (select tool)
 
