@@ -103,6 +103,8 @@ void App::setKey(int key, int action){ // action: click = 1, release = 0
             case GLFW_KEY_N:
                 if(m_CTRLDown) m_openCanvasPopup = true;
             break;
+            case GLFW_KEY_B:
+                m_brush.isOnTool() ? m_brush.setTool(NONE_) : m_brush.setTool(fill); 
         }
     }
 }
@@ -157,7 +159,7 @@ void App::start(){
         glfwSwapBuffers(m_window);
         glfwWaitEvents();
     }
-
+    
     m_renderer.cleanup();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();

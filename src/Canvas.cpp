@@ -67,6 +67,10 @@ void Canvas::clearCanvas(const unsigned int color){
 }
 
 void Canvas::draw(vec2f c, vec2f cprev, Brush& brush){
+    if(brush.isOnTool()){
+        brush.useTool(pixels, c.x, c.y, m_canvasWidth, m_canvasHeight);
+        return;
+    }
     // simple interp between prevc and currentc
     float dx = c.x - cprev.x, dy = c.y - cprev.y;
     float dist = std::sqrt(dx*dx+dy*dy);

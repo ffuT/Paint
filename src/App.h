@@ -33,19 +33,17 @@ class App{
     double getMouseX() {return m_mouse.x;}
     double getMouseY() {return m_mouse.y;}
 
-    Canvas m_canvas = Canvas(1,1);
-    Brush m_brush;
     private:
-
     void loadLuaconf(const char*);
+
     void render();
     void renderUI();
     
     void drag();
     void draw();
-
+    
     vec2f mouseToPixels();
-
+    
     // input control
     bool m_enterDown = false;
     bool m_EscDown = false;
@@ -57,22 +55,24 @@ class App{
     bool m_ImGuiCaptureMouse = false;
     vec2f m_mouse;
     vec2f m_dragStart;
-
+    
     // canvas var
+    Canvas m_canvas = Canvas(1,1);
+    Brush m_brush;
     float m_canvasOffsetWidth = 0;
     float m_canvasOffsetHeight = 0;
     float m_zoom = 1.0f;
-    vec2f m_scale;
     
-    //config vars
+    // config var
     std::vector<unsigned int> m_customColors;
     bool m_clearAlhpa = false;
     float m_MaxZoom = 10;
-
+    
     // window + GL
     Renderer m_renderer;
     int m_width = 800, m_height = 800; // OS window size
     int m_fbwidth, m_fbheight; // raw window pix size
+    vec2f m_scale;
     GLFWwindow* m_window;
     const ImGuiWindowFlags m_flags;
 };
