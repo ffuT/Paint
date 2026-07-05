@@ -313,6 +313,18 @@ void App::renderUI(){
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::Begin("stuff", nullptr, m_flags);
     {
+        // tool select
+        if(ImGui::Button("p##brush"))
+            m_brush.setTool(NONE_);
+        if(ImGui::IsItemHovered())
+            ImGui::SetTooltip("sets brush to paint mode");
+        ImGui::SameLine();
+        
+        if(ImGui::Button("f##fill"))
+            m_brush.setTool(fill);
+        if(ImGui::IsItemHovered())
+            ImGui::SetTooltip("sets current tool to \"fill\"");
+
         // color picker
         static ImVec4 col = ImGui::ColorConvertU32ToFloat4(m_brush.getColor());
         ImGui::Text("Color picker");

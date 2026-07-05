@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <deque>
 #include "Utils.h"
 #include "Brush.h"
 
@@ -29,8 +29,7 @@ class Canvas{
     unsigned int m_canvasHeight;
 
     // snapshot var
-    int currentSnapshot = 0;
+    int currentSnapshot = -1;
     const int maxSnapshots = 20; // 15*1920*1080*4 ~ 118MB
-    int currentSnapDepth = 0;
-    std::vector<unsigned int*> snapShots; 
+    std::deque<unsigned int*> snapShots; 
 };

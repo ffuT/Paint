@@ -7,54 +7,47 @@ Canvas::Canvas(unsigned int w, unsigned int h) :
     m_canvasWidth(w), m_canvasHeight(h),
     snapShots(maxSnapshots, nullptr),
     pixels(new unsigned int[w * h]){
-    clearCanvas(Color::White);
 }
 
 Canvas::~Canvas(){
     delete[] pixels;
-    for(int i = 0; i < maxSnapshots; i++){ // cleanup the snapshots
-        if(snapShots[i] != nullptr)
-            delete[] snapShots[i];
+    while(!snapShots.empty()){
+        delete[] snapShots.back();
+        snapShots.pop_back(); 
     }
 }
 
 void Canvas::saveSnapshot(){
     currentSnapshot++;
-    if(currentSnapshot >= maxSnapshots) // wrap back from max
-        currentSnapshot = 0;
-    if(snapShots[currentSnapshot] != nullptr) 
-        delete[] snapShots[currentSnapshot];
-    snapShots[currentSnapshot] = new unsigned int[m_canvasWidth * m_canvasHeight];
+    if(currentSnapshot >= maxSnapshots){
+        currentSnapshot--;
+        delete[] snapShots.front(); 
+        snapShots.pop_front();
+    }
+    snapShots.push_back(new unsigned int[m_canvasWidth * m_canvasHeight]);
     std::memcpy(snapShots[currentSnapshot], pixels, m_canvasWidth * m_canvasHeight * sizeof(unsigned int));
     //printf("saved sn at %d\n", currentSnapshot);
 }
 
 void Canvas::goToLastSnap(){
     currentSnapshot--;
-    if(currentSnapshot < 0)
-        currentSnapshot = maxSnapshots-1;
-    if(currentSnapDepth >= maxSnapshots-1 || snapShots[currentSnapshot] == nullptr){ // cant go back
-        currentSnapshot++;
-        if(currentSnapshot >= maxSnapshots) 
-            currentSnapshot = 0;
+    if(currentSnapshot < 0){
+        currentSnapshot = 0; // reset to first snapshot
         return;
-    } 
-    currentSnapDepth++;
+    }
+
     //printf("copy snapshot at %d\n", currentSnapshot);
     std::memcpy(pixels, snapShots[currentSnapshot], m_canvasWidth * m_canvasHeight * sizeof(unsigned int));
 }
 
 void Canvas::goToNextSnap(){
     currentSnapshot++;
-    if(currentSnapshot >= maxSnapshots) // cant go forward
-        currentSnapshot = 0;
-    if(currentSnapDepth <= 0 || snapShots[currentSnapshot] == nullptr){
-        currentSnapshot--;
-        if(currentSnapshot < 0) 
-            currentSnapshot = maxSnapshots-1;
+    int i = snapShots.size();
+    if(currentSnapshot > snapShots.size()-1){ // cant go forward
+        currentSnapshot--; // cancel redo
         return;
     }
-    currentSnapDepth--;
+
     //printf("copy snapshot at %d\n", currentSnapshot);
     std::memcpy(pixels, snapShots[currentSnapshot], m_canvasWidth * m_canvasHeight * sizeof(unsigned int));
 }
@@ -90,11 +83,9 @@ void Canvas::newPixelBuffer(int w, int h, const unsigned int clearColor){
     m_canvasWidth = w;
     m_canvasHeight = h;
 
-    for(int i = 0; i < maxSnapshots; i++){ // cleanup the snapshots
-        if(snapShots[i] != nullptr){
-            delete[] snapShots[i];
-            snapShots[i] = nullptr;
-        }
+    while(!snapShots.empty()){
+        delete[] snapShots.back();
+        snapShots.pop_back(); 
     }
     saveSnapshot();
 }
