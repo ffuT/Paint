@@ -16,6 +16,8 @@ void Renderer::updateTex(const Canvas& canvas){
 }
 
 void Renderer::render(const renderParams& params){
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
     glUseProgram(m_shader);
     
     glUniform1f(m_canvasWidthOffset, params.canvasRes.x);

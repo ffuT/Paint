@@ -5,8 +5,7 @@
 
 Canvas::Canvas(unsigned int w, unsigned int h) :
     m_canvasWidth(w), m_canvasHeight(h),
-    snapShots(maxSnapshots, nullptr),
-    pixels(new unsigned int[w * h]){
+    pixels(new unsigned int[w * h]()){
 }
 
 Canvas::~Canvas(){
@@ -23,6 +22,10 @@ void Canvas::saveSnapshot(){
         currentSnapshot--;
         delete[] snapShots.front(); 
         snapShots.pop_front();
+    }
+    while(currentSnapshot < snapShots.size() && currentSnapshot != snapShots.size()){
+        delete[] snapShots.back();
+        snapShots.pop_back();
     }
     snapShots.push_back(new unsigned int[m_canvasWidth * m_canvasHeight]);
     std::memcpy(snapShots[currentSnapshot], pixels, m_canvasWidth * m_canvasHeight * sizeof(unsigned int));
@@ -82,10 +85,11 @@ void Canvas::newPixelBuffer(int w, int h, const unsigned int clearColor){
     }
     m_canvasWidth = w;
     m_canvasHeight = h;
-
+    
     while(!snapShots.empty()){
         delete[] snapShots.back();
         snapShots.pop_back(); 
     }
+    currentSnapshot = -1;
     saveSnapshot();
 }

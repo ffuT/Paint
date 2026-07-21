@@ -82,8 +82,10 @@ void App::setKey(int key, int action){ // action: click = 1, release = 0
         break;
         case GLFW_KEY_ENTER:
             m_enterDown = action;
+        break;
         case GLFW_KEY_ESCAPE:
             m_EscDown = action;
+        break;
     }
 
     if(action){ // only switch on click
@@ -105,6 +107,7 @@ void App::setKey(int key, int action){ // action: click = 1, release = 0
             break;
             case GLFW_KEY_B:
                 m_brush.isOnTool() ? m_brush.setTool(NONE_) : m_brush.setTool(fill); 
+            break;
         }
     }
 }
@@ -148,9 +151,6 @@ void App::start(){
     m_canvasOffsetHeight = (float) -m_fbheight/1.8 - (float) m_canvas.getHeight()/2 * m_zoom;
 
     while(!glfwWindowShouldClose(m_window)) {
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-  
         drag();
         draw();
         render();

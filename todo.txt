@@ -36,6 +36,8 @@ custom "default colors" from the config file, loop over a table perhaps?
 
 fill tool
 
+simplified snapshots internal code
+
 Still TODO:
 
 lua stuff
@@ -46,7 +48,6 @@ more brushtypes
 
 optimize savestate snapshots (diffs only)
 fix redo maxdepth after undo
-
 
 copy paste (select tool)
 
