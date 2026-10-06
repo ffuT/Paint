@@ -12,7 +12,7 @@ I created this app to make a lightweight drawing tool for quick simple drawings.
 - Basic ImGui color selection with preset colors
 - Brush size slider
 - Undo/Redo with `CTRL` `Z` and `Y`
-- New canvas with custom size and transparent background with `CTRL` `N`
+- New canvas with `CTRL` `N`
 - Clear canvas with `CTRL` `C`
 - Zooming with `CTRL` + scroll, 
 - Panning on scroll or right click drag
