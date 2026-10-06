@@ -1,11 +1,13 @@
 #include "Brush.h"
+#include <cstdint>
 #include <cstdio>
 #include <stack>
 
 Brush::Brush(){};
 Brush::~Brush(){};
 
-void Brush::stamp(unsigned int* pixels, int cx, int cy, int w, int h) const{
+bool Brush::stamp(uint32_t* pixels, int cx, int cy, int w, int h) const{
+    bool change = false;
     int r = m_brushRadius;
     for(int y = cy-r; y <= cy+r; y++){
         for(int x = cx-r; x <= cx+r; x++){
@@ -16,34 +18,40 @@ void Brush::stamp(unsigned int* pixels, int cx, int cy, int w, int h) const{
             bool fill = brushmap.at(m_currentBrush)(dx, dy, r);
             if(fill){
                 pixels[y * w + x] = m_currentColor;
+                change = true;
             }
         }
     }
+    return change;
 }
 
 void Brush::setTool(const tool tool){
     m_currentTool = tool;
-    m_onTool = tool != NONE_ ? true : false;
 }
 
 bool Brush::isOnTool(){
-    return m_onTool;
+    return m_currentTool != tool::NONE;
 }
 
-void Brush::useTool(unsigned int* pixels, int cx, int cy, int w, int h){
-    unsigned int col = pixels[cy*w+cx];
+bool Brush::useTool(uint32_t* pixels, int cx, int cy, int w, int h){
+    bool change = false;
+    if(cx < 0 || cx >= w || cy < 0 || cy >= h)
+        return change; // exit if outside canvas
+    uint32_t col = pixels[cy*w+cx];
     switch(m_currentTool){
-        case fill:
+        case tool::fill:
             m_fillcolor = pixels[cy*w+cx];
-            floodFill(pixels, cx, cy, w, h);
+            change |= floodFill(pixels, cx, cy, w, h);
         break;
 
         default:
         break;
     }
+    return change;
 }
 
-void Brush::floodFill(unsigned int* pixels, int cx, int cy, int w, int h){
+bool Brush::floodFill(unsigned int* pixels, int cx, int cy, int w, int h){
+    bool change = false;
     std::stack<std::pair<int, int>> stack;
     stack.push({cx, cy});
     while(!stack.empty()) {
@@ -55,12 +63,14 @@ void Brush::floodFill(unsigned int* pixels, int cx, int cy, int w, int h){
         unsigned int col = pixels[y*w + x];
         if(col == m_currentColor || col != m_fillcolor)
             continue;
+        change = true;
         pixels[y*w + x] = m_currentColor;
         stack.push({x+1,y});
         stack.push({x-1,y});
         stack.push({x,y+1});
         stack.push({x,y-1});
     }
+    return change;
 }
 
 void Brush::setColor(unsigned int newcol){
@@ -68,7 +78,7 @@ void Brush::setColor(unsigned int newcol){
 }
 
 void Brush::nextBrush(){
-    int t = m_currentBrush +1;
+    int t = (uint32_t) m_currentBrush + 1;
     if(t >= (int) brush::NONE)
         t = 0;
     printf("new brush %d\n", t);

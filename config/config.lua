@@ -1,10 +1,10 @@
 -- window
 Width = 1280
-Heigth = 720
+Height = 720
 
 -- canvas
 CWidth = 1280
-CHeigth = 720
+CHeight = 720
 AlphaAsClear = false
 
 -- utility
@@ -16,7 +16,7 @@ Colors = {
     -- name doesnt matter
     -- format is 0xAABBGGRR
     cyan = 0xffffff00,
-    yllow = 0xffff00ff,
-    purple = 0xff00ffff,
+    yellow = 0xffff00ff, -- purple
+    purple = 0xff00ffff, -- yellow
     hahaha = 0xff00a5ff, -- orange
 }

@@ -28,7 +28,7 @@ inline lua_State* loadconfig(const char* path){
         exit(EXIT_FAILURE);
     }
 
-    luaL_dostring(L, "print('config loaded succesfully')");
+    luaL_dostring(L, "print('config loaded successfully')");
     return L;
 };
 
@@ -53,6 +53,7 @@ inline void loadcolors(lua_State* L, const char* var_name, std::vector<unsigned 
     while(lua_next(L, -2) != 0) {
         if (!lua_isnumber(L, -1)){
             luaerror(L, "variable is not a number %s\n", lua_tostring(L, -2));
+            lua_pop(L, 1);
             continue;
         } 
         var.push_back((unsigned int) lua_tointeger(L, -1));       

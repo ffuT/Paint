@@ -8,6 +8,7 @@ void Renderer::cleanup(){
     glDeleteProgram(m_shader);
     glDeleteTextures(1, &m_tex);
     glDeleteVertexArrays(1, &m_vao);
+    glDeleteBuffers(1, &m_vbo);
 }
 
 void Renderer::updateTex(const Canvas& canvas){
@@ -33,9 +34,8 @@ void Renderer::render(const renderParams& params){
 }
 
 void Renderer::createVAO(){
-    GLuint vbo;
     glGenVertexArrays(1, &m_vao);
-    glGenBuffers(1, &vbo);
+    glGenBuffers(1, &m_vbo);
 
     float verts[] = {
         -1,-1, 0,1,
@@ -47,7 +47,7 @@ void Renderer::createVAO(){
     };
 
     glBindVertexArray(m_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);

@@ -23,11 +23,11 @@ private:
 void createVAO();
 void createShader();
 
-GLuint m_tex, m_shader, m_vao;
+GLuint m_tex, m_shader, m_vao, m_vbo;
 
-GLuint m_canvasWidthOffset;
-GLuint m_canvasheightOffset;
-GLuint m_zoomOffset;
-GLuint m_offsetOffset;
-GLuint m_resolutionOffset;
+GLint m_canvasWidthOffset;
+GLint m_canvasheightOffset;
+GLint m_zoomOffset;
+GLint m_offsetOffset;
+GLint m_resolutionOffset;
 };

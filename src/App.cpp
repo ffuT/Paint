@@ -17,7 +17,7 @@
 // void framebufferSizeCallback(GLFWwindow* window, int w, int h) {
 //     App* app = (App*) glfwGetWindowUserPointer(window);
 //     if(!app) return;
-//     app->m_canvas.newPixelBuffer(w, h, (app->m_clearAlhpa & Color::noBG : Color::White));
+//     app->m_canvas.newPixelBuffer(w, h, (app->m_clearAlpha & Color::noBG : Color::White));
 //     glViewport(0, 0, w, h);
 //     printf("resized canvas to %dx%d \n", w, h);
 // }
@@ -30,7 +30,7 @@ void windowResizeCallback(GLFWwindow* window, int w, int h){
     printf("resized window to %dx%d \n", w, h);
 }
 
-void curserMoveCallback(GLFWwindow* window, double x, double y){
+void cursorMoveCallback(GLFWwindow* window, double x, double y){
     App* app = (App*) glfwGetWindowUserPointer(window);
     if(!app) return;
     app->setMousePos(x, y);
@@ -94,7 +94,7 @@ void App::setKey(int key, int action){ // action: click = 1, release = 0
                 m_brush.nextBrush();
             break;
             case GLFW_KEY_C:
-                if(m_CTRLDown) m_canvas.clearCanvas( m_clearAlhpa ? Color::noBG : Color::White);
+                if(m_CTRLDown) m_canvas.clearCanvas( m_clearAlpha ? Color::noBG : Color::White);
             break;
             case GLFW_KEY_Z: // ctrlz
                 if(m_CTRLDown) m_canvas.goToLastSnap();
@@ -106,7 +106,7 @@ void App::setKey(int key, int action){ // action: click = 1, release = 0
                 if(m_CTRLDown) m_openCanvasPopup = true;
             break;
             case GLFW_KEY_B:
-                m_brush.isOnTool() ? m_brush.setTool(NONE_) : m_brush.setTool(fill); 
+                m_brush.isOnTool() ? m_brush.setTool(tool::NONE) : m_brush.setTool(tool::fill); 
             break;
         }
     }
@@ -129,13 +129,22 @@ void App::setMouseDown(int button, bool in){
     }
 
     if(!m_ImGuiCaptureMouse && (button == GLFW_MOUSE_BUTTON_LEFT && in == 0)){
-        m_canvas.saveSnapshot();
+        if(m_canvas.m_dirtyBuffer){
+            m_canvas.saveSnapshot();
+            m_canvas.m_dirtyBuffer = false;
+        }
     }
 }
 
 void App::setMousePos(double x, double y){
     m_mouse.x = x;
     m_mouse.y = y;
+}
+
+void App::centerCanvas(){
+    // center canvas around UI offset pos on screen:
+    m_canvasOffsetWidth = (float) m_fbwidth/2 - (float) m_canvas.getWidth()/2 * m_zoom;
+    m_canvasOffsetHeight = (float) -m_fbheight/1.8 - (float) m_canvas.getHeight()/2 * m_zoom;
 }
 
 void App::start(){
@@ -146,9 +155,7 @@ void App::start(){
     glfwWaitEvents();
     // get window scale from system
     glfwGetWindowContentScale(m_window, &m_scale.x,&m_scale.y);
-    // canvas offset pos on screen:
-    m_canvasOffsetWidth = (float) m_fbwidth/2 - (float) m_canvas.getWidth()/2 * m_zoom;
-    m_canvasOffsetHeight = (float) -m_fbheight/1.8 - (float) m_canvas.getHeight()/2 * m_zoom;
+    centerCanvas();
 
     while(!glfwWindowShouldClose(m_window)) {
         drag();
@@ -171,13 +178,13 @@ void App::loadLuaconf(const char* path){
     lua_State* L = loadconfig(path);
 
     loadint(L, "Width", m_width);
-    loadint(L, "Heigth", m_height);
-    loadbool(L, "AlphaAsClear", m_clearAlhpa);
+    loadint(L, "Height", m_height);
+    loadbool(L, "AlphaAsClear", m_clearAlpha);
     {
-        int w,h;
+        int w = 1080, h = 720;
         loadint(L, "CWidth", w);
-        loadint(L, "CHeigth", h);
-        m_canvas.newPixelBuffer(w, h, m_clearAlhpa ? Color::noBG : Color::White);
+        loadint(L, "CHeight", h);
+        m_canvas.newPixelBuffer(w, h, m_clearAlpha ? Color::noBG : Color::White);
     }
     loadfloat(L, "MaxZoom", m_MaxZoom);
     loadfloat(L, "StartZoom", m_zoom);
@@ -223,7 +230,7 @@ bool App::initialize(int argc, char* argv[]){
     //callbacks
     //glfwSetFramebufferSizeCallback(m_window, framebufferSizeCallback); // disable to lock canvas
     glfwSetWindowUserPointer(m_window, this);
-    glfwSetCursorPosCallback(m_window, curserMoveCallback);
+    glfwSetCursorPosCallback(m_window, cursorMoveCallback);
     glfwSetWindowSizeCallback(m_window, windowResizeCallback);
     glfwSetKeyCallback(m_window, keyPressCallback);
     glfwSetMouseButtonCallback(m_window, mouseClickCallback);
@@ -259,8 +266,8 @@ void App::updateScroll(double xoffset, double yoffset){
         m_canvasOffsetWidth -= ((double) CW/2) * (m_zoom - oldzoom);
         m_canvasOffsetHeight -= ((double) m_canvas.getHeight()/2) * (m_zoom - oldzoom);
     } else { // panning on scroll if not pressing CTRL
-        m_canvasOffsetWidth += (xoffset / m_zoom*m_zoom) * 33;
-        m_canvasOffsetHeight -= (yoffset / m_zoom*m_zoom) * 33;
+        m_canvasOffsetWidth += xoffset * m_panStrength;
+        m_canvasOffsetHeight -= yoffset * m_panStrength;
     }
 }
 
@@ -285,7 +292,10 @@ void App::draw(){
 }
 
 void App::render(){
-    m_renderer.updateTex(m_canvas);
+    if(m_canvas.m_dirty){
+        m_renderer.updateTex(m_canvas);
+        m_canvas.m_dirty = false;
+    }
     m_renderer.render({
         .offset = {m_canvasOffsetWidth,m_canvasOffsetHeight},
         .zoom = m_zoom,
@@ -312,16 +322,17 @@ void App::renderUI(){
     ImGui::SetNextWindowSize(ImVec2(m_width, 140), ImGuiCond_Always);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::Begin("stuff", nullptr, m_flags);
+    ImGui::PopStyleVar();
     {
         // tool select
         if(ImGui::Button("p##brush"))
-            m_brush.setTool(NONE_);
+            m_brush.setTool(tool::NONE);
         if(ImGui::IsItemHovered())
             ImGui::SetTooltip("sets brush to paint mode");
         ImGui::SameLine();
         
         if(ImGui::Button("f##fill"))
-            m_brush.setTool(fill);
+            m_brush.setTool(tool::fill);
         if(ImGui::IsItemHovered())
             ImGui::SetTooltip("sets current tool to \"fill\"");
 
@@ -377,11 +388,12 @@ void App::renderUI(){
             //std::swap(w,h);
         //ImGui::SameLine();
         ImGui::Checkbox("Square", &same);
-        ImGui::Checkbox("Transparent", &m_clearAlhpa);
+        ImGui::Checkbox("Transparent", &m_clearAlpha);
         
         if(ImGui::Button("OK") || m_enterDown){
-            m_canvas.newPixelBuffer(w, same ? w : h, m_clearAlhpa ? Color::noBG : Color::White);
+            m_canvas.newPixelBuffer(w, same ? w : h, m_clearAlpha ? Color::noBG : Color::White);
             ImGui::CloseCurrentPopup();
+            centerCanvas();
         } 
         ImGui::SameLine();       
         if(ImGui::Button("Cancel") || m_EscDown){
@@ -395,10 +407,11 @@ void App::renderUI(){
     {   // bottom tool bar
         ImGui::SetNextWindowPos(ImVec2(0,m_height-30), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(m_width+10, 30), ImGuiCond_Always);
+
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        
         ImGui::Begin("info", nullptr, m_flags);
-        
+        ImGui::PopStyleVar();
+
         ImGui::Text("(%d,%d)", (int) mouseToPixels().x, (int) mouseToPixels().y);
         ImGui::SameLine();
         ImGui::Text("(%d,%d)", m_canvas.getWidth(), m_canvas.getHeight());

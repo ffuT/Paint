@@ -1,6 +1,7 @@
 Build/*
 bin/*
 .cache/*
+imgui.ini
 
 .vscode/
 compile_commands.json

@@ -11,7 +11,7 @@ class Canvas{
 
     void draw(vec2f c, vec2f cprev, Brush& brush);
     void clearCanvas(const unsigned int color);
-    
+
     void newPixelBuffer(int w, int h, const unsigned int clearColor);
     
     void saveSnapshot();
@@ -20,16 +20,18 @@ class Canvas{
     
     unsigned int getWidth() const {return m_canvasWidth;}
     unsigned int getHeight() const {return m_canvasHeight;}
-    const unsigned int* getPixels() const {return pixels;}
+    const uint32_t* getPixels() const {return pixels;}
     
+    bool m_dirty = true;
+    bool m_dirtyBuffer = true;
     private:
     // canvas var
-    unsigned int* pixels;
-    unsigned int m_canvasWidth;
-    unsigned int m_canvasHeight;
+    uint32_t* pixels;
+    uint32_t m_canvasWidth;
+    uint32_t m_canvasHeight;
 
     // snapshot var
     int currentSnapshot = -1;
-    const int maxSnapshots = 20; // 15*1920*1080*4 ~ 118MB
-    std::deque<unsigned int*> snapShots; 
+    const int maxSnapshots = 20;
+    std::deque<uint32_t*> snapShots; 
 };

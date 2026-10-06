@@ -1,29 +1,30 @@
 #pragma once
 
+#include <cstdint>
 #include <functional>
 #include <map>
 
 namespace Color {
     // unsigned int color = AABBGGRR
-    constexpr unsigned int noBG = 0x00000000;
-    constexpr unsigned int White = 0xffffffff;
-    constexpr unsigned int Black = 0xff000000;
-    constexpr unsigned int Red = 0xff0000ff;
-    constexpr unsigned int Green = 0xff00ff00;
-    constexpr unsigned int Blue = 0xffff0000;
+    constexpr uint32_t noBG = 0x00000000;
+    constexpr uint32_t White = 0xffffffff;
+    constexpr uint32_t Black = 0xff000000;
+    constexpr uint32_t Red = 0xff0000ff;
+    constexpr uint32_t Green = 0xff00ff00;
+    constexpr uint32_t Blue = 0xffff0000;
 };
 
-enum brush{
+enum class brush{
     circle,
     square,
 
     NONE // NONE so it can wrap to circle
 };
 
-enum tool{
+enum class tool{
     fill,
     select_,
-    NONE_
+    NONE
 };
 
 class Brush{
@@ -33,27 +34,26 @@ class Brush{
 
     void setBrush(brush);
     void nextBrush();
-    void stamp(unsigned int*, int, int, int, int) const;
-    void useTool(unsigned int*, int, int, int, int);
+    bool stamp(uint32_t*, int, int, int, int) const;
+    bool useTool(uint32_t*, int, int, int, int);
     
     bool isOnTool();
     void setTool(const tool);
     
-    void setColor(unsigned int color);
-    unsigned int getColor(){return m_currentColor;}
+    void setColor(uint32_t color);
+    uint32_t getColor(){return m_currentColor;}
     
     void setRadius(float r){m_brushRadius = r;}
     float getRadius(){return m_brushRadius;}
     
     private:
 
-    void floodFill(unsigned int*, int, int, int, int);
-    unsigned int m_fillcolor = 0;
+    bool floodFill(uint32_t*, int, int, int, int);
+    uint32_t m_fillcolor = 0;
 
-    bool m_onTool = false;
-    tool m_currentTool = fill;
+    tool m_currentTool = tool::NONE;
     // brush vars
-    brush m_currentBrush = circle;
+    brush m_currentBrush = brush::circle;
     float m_brushRadius = 5.0f;
     unsigned int m_currentColor = Color::Black;
 

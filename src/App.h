@@ -19,6 +19,7 @@ class App{
     void updateViewport();
     void setWindowBounds(int, int);
     void setFrameBounds(int, int);
+    void centerCanvas();
     
     int getWidth() {return m_width;};
     int getHeight() {return m_height;};
@@ -65,8 +66,9 @@ class App{
     
     // config var
     std::vector<unsigned int> m_customColors;
-    bool m_clearAlhpa = false;
+    bool m_clearAlpha = false;
     float m_MaxZoom = 10;
+    double m_panStrength = 33.0;
     
     // window + GL
     Renderer m_renderer;
