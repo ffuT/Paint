@@ -50,7 +50,7 @@ bool Brush::useTool(uint32_t* pixels, int cx, int cy, int w, int h){
     return change;
 }
 
-bool Brush::floodFill(unsigned int* pixels, int cx, int cy, int w, int h){
+bool Brush::floodFill(uint32_t* pixels, int cx, int cy, int w, int h){
     bool change = false;
     std::stack<std::pair<int, int>> stack;
     stack.push({cx, cy});
@@ -73,7 +73,7 @@ bool Brush::floodFill(unsigned int* pixels, int cx, int cy, int w, int h){
     return change;
 }
 
-void Brush::setColor(unsigned int newcol){
+void Brush::setColor(uint32_t newcol){
     m_currentColor = newcol;
 }
 

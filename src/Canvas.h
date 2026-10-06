@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <deque>
 #include "Utils.h"
 #include "Brush.h"
@@ -10,9 +11,9 @@ class Canvas{
     ~Canvas();
 
     void draw(vec2f c, vec2f cprev, Brush& brush);
-    void clearCanvas(const unsigned int color);
+    void clearCanvas(const uint32_t color);
 
-    void newPixelBuffer(int w, int h, const unsigned int clearColor);
+    void newPixelBuffer(int w, int h, const uint32_t clearColor);
     
     void saveSnapshot();
     void goToLastSnap();
@@ -31,7 +32,7 @@ class Canvas{
     uint32_t m_canvasHeight;
 
     // snapshot var
-    int currentSnapshot = -1;
-    const int maxSnapshots = 20;
+    int8_t currentSnapshot = -1;
+    const int8_t maxSnapshots = 20;
     std::deque<uint32_t*> snapShots; 
 };

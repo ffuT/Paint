@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <glad.h>
 #include <GLFW/glfw3.h>
 
@@ -65,7 +66,7 @@ class App{
     float m_zoom = 1.0f;
     
     // config var
-    std::vector<unsigned int> m_customColors;
+    std::vector<uint32_t> m_customColors;
     bool m_clearAlpha = false;
     float m_MaxZoom = 10;
     double m_panStrength = 33.0;

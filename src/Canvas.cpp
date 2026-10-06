@@ -6,7 +6,7 @@
 
 Canvas::Canvas(unsigned int w, unsigned int h) :
     m_canvasWidth(w), m_canvasHeight(h),
-    pixels(new unsigned int[w * h]()){
+    pixels(new uint32_t[w * h]()){
 }
 
 Canvas::~Canvas(){
@@ -29,7 +29,7 @@ void Canvas::saveSnapshot(){
         snapShots.pop_back();
     }
     snapShots.push_back(new uint32_t[m_canvasWidth * m_canvasHeight]);
-    std::memcpy(snapShots[currentSnapshot], pixels, m_canvasWidth * m_canvasHeight * sizeof(unsigned int));
+    std::memcpy(snapShots[currentSnapshot], pixels, m_canvasWidth * m_canvasHeight * sizeof(uint32_t));
     //printf("saved sn at %d\n", currentSnapshot);
 }
 
@@ -41,7 +41,7 @@ void Canvas::goToLastSnap(){
     }
 
     //printf("copy snapshot at %d\n", currentSnapshot);
-    std::memcpy(pixels, snapShots[currentSnapshot], m_canvasWidth * m_canvasHeight * sizeof(unsigned int));
+    std::memcpy(pixels, snapShots[currentSnapshot], m_canvasWidth * m_canvasHeight * sizeof(uint32_t));
     m_dirty = true;
     m_dirtyBuffer = true;
 }
@@ -55,7 +55,7 @@ void Canvas::goToNextSnap(){
     }
 
     //printf("copy snapshot at %d\n", currentSnapshot);
-    std::memcpy(pixels, snapShots[currentSnapshot], m_canvasWidth * m_canvasHeight * sizeof(unsigned int));
+    std::memcpy(pixels, snapShots[currentSnapshot], m_canvasWidth * m_canvasHeight * sizeof(uint32_t));
     m_dirty = true;
 }
 
@@ -81,8 +81,8 @@ void Canvas::draw(vec2f c, vec2f cprev, Brush& brush){
         float t = (float) i/steps;
         changed |= brush.stamp(pixels, cprev.x + t * dx, cprev.y + t *dy, m_canvasWidth, m_canvasHeight);
     }
-    m_dirtyBuffer = changed;
-    m_dirty = changed;
+    m_dirtyBuffer |= changed;
+    m_dirty |= changed;
 }
 
 void Canvas::newPixelBuffer(int w, int h, const uint32_t clearColor){
@@ -93,7 +93,7 @@ void Canvas::newPixelBuffer(int w, int h, const uint32_t clearColor){
     }
 
     delete[] pixels;
-    pixels = new unsigned int[w * h];
+    pixels = new uint32_t[w * h];
     for(int i = 0; i < w * h; i++){
         pixels[i] = clearColor;
     }

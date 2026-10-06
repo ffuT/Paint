@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdarg>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <lua.hpp>
@@ -41,7 +42,7 @@ inline bool isnil(lua_State* L, const char* var_name){
     return false;
 }
 
-inline void loadcolors(lua_State* L, const char* var_name, std::vector<unsigned int>& var){
+inline void loadcolors(lua_State* L, const char* var_name, std::vector<uint32_t>& var){
     if(isnil(L, var_name))
         return;
     lua_getglobal(L, var_name);
@@ -55,8 +56,8 @@ inline void loadcolors(lua_State* L, const char* var_name, std::vector<unsigned 
             luaerror(L, "variable is not a number %s\n", lua_tostring(L, -2));
             lua_pop(L, 1);
             continue;
-        } 
-        var.push_back((unsigned int) lua_tointeger(L, -1));       
+        }
+        var.push_back((uint32_t) lua_tointeger(L, -1));       
         lua_pop(L, 1);
     }
 }

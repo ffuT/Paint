@@ -5,6 +5,7 @@
 #include "Utils.h"
 
 #include <GLFW/glfw3.h>
+#include <cstdint>
 #include <filesystem>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
@@ -356,7 +357,7 @@ void App::renderUI(){
         ImGui::SameLine();
         if(ImGui::ColorButton("##color4", ImGui::ColorConvertU32ToFloat4(Color::Green)))
             col = ImGui::ColorConvertU32ToFloat4(Color::Green);
-        for(unsigned int i : m_customColors){
+        for(uint32_t i : m_customColors){
             ImGui::SameLine();
             ImGui::PushID(i);
             if(ImGui::ColorButton("##colorx", ImGui::ColorConvertU32ToFloat4(i)))
