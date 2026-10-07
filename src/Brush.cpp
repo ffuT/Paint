@@ -8,7 +8,7 @@ Brush::~Brush(){};
 
 bool Brush::stamp(uint32_t* pixels, int cx, int cy, int w, int h) const{
     bool change = false;
-    int r = m_brushRadius;
+    float r = m_brushRadius;
     for(int y = cy-r; y <= cy+r; y++){
         for(int x = cx-r; x <= cx+r; x++){
             if(x < 0 || x >= w || y < 0 || y >= h)

@@ -1,5 +1,6 @@
 #include "App.h"
 #include "Canvas.h"
+#include <cmath>
 #include "Renderer.h"
 
 Renderer::Renderer(){}
@@ -30,10 +31,11 @@ void Renderer::render(const renderParams& params){
     glUniform2f(m_resolutionOffset, params.resolution.x, params.resolution.y);
 
     if(!params.useTool)
-        glUniform1f(m_brushR, params.brushRadius);
+        glUniform1f(m_brushR, params.brushRadius-0.4f);
     else
         glUniform1f(m_brushR, 0);
-    glUniform2f(m_mousePos, params.mousePos.x, params.mousePos.y);
+    float x = std::floor(params.mousePos.x) , y = std::floor(params.mousePos.y);
+    glUniform2f(m_mousePos, x + 0.5, y + 0.5);
 
     glBindVertexArray(m_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -119,7 +121,7 @@ void Renderer::createShader(){
             float len2 = dist.x*dist.x + dist.y*dist.y;
             float rad2 = u_brushRadius * u_brushRadius;
             float previewWidth = 2*u_brushRadius/u_zoom;
-            if(len2 - rad2 < 1.0 && len2 - (rad2 - previewWidth) > 1.0){
+            if(len2 - rad2 < 0.001 && len2 - (rad2 - previewWidth) > 0.001){
                 color = vec4(0.0);
             }
             

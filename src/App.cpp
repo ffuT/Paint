@@ -44,8 +44,6 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset){
 void mouseClickCallback(GLFWwindow* window, int button, int action, int mods){
     App* app = (App*) glfwGetWindowUserPointer(window);
     if(!app) return;
-    int x = app->getMouseX();
-    int y = app->getMouseY();
     app->setMouseDown(button, action == GLFW_PRESS);
 }
 
@@ -277,7 +275,7 @@ void App::updateScroll(double xoffset, double yoffset){
         m_canvasOffsetHeight -= ((double) m_canvas.getHeight()/2) * (m_zoom - oldzoom);
     } else if (m_SHIFTDown) { // scale brush radius
         double currentRadius = m_brush.getRadius();
-        currentRadius *= (1.0f + yoffset * 0.1f);
+        currentRadius *= (1.0f - yoffset * 0.1f);
         if(currentRadius <= 1) currentRadius = 1.0;
         m_brush.setRadius(currentRadius);
     } else { // panning on scroll if not pressing CTRL
@@ -317,7 +315,7 @@ void App::render(){
         .resolution = {(float) m_fbwidth, (float) m_fbheight},
         .canvasRes = {(float) m_canvas.getWidth(), (float) m_canvas.getHeight(), },
         .mousePos = mouseToPixels(),
-        .brushRadius = m_brush.getRadius(),
+        .brushRadius = (m_brush.getRadius()),
         .useTool = m_brush.isOnTool()
     });
 }

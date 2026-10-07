@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <glad.h>
 #include <GLFW/glfw3.h>
-#include "imgui/imgui.h"
 
 #include "Canvas.h"
 #include "Brush.h"
@@ -20,7 +19,6 @@ class App{
     void updateViewport();
     void setWindowBounds(int, int);
     void setFrameBounds(int, int);
-    void centerCanvas();
     
     int getWidth() {return m_width;};
     int getHeight() {return m_height;};
@@ -32,9 +30,6 @@ class App{
 
     void updateScroll(double xoffset, double yoffset);
     
-    double getMouseX() {return m_mouse.x;}
-    double getMouseY() {return m_mouse.y;}
-
     private:
     void loadLuaconf(const char*);
 
@@ -44,6 +39,7 @@ class App{
     void drag();
     void draw();
     
+    void centerCanvas();
     vec2f mouseToPixels();
     
     // input control

@@ -58,9 +58,9 @@ class Brush{
     unsigned int m_currentColor = Color::Black;
 
     std::map<const brush, std::function<bool(int, int, int)>> brushmap = {
-        { brush::circle, [](int dx, int dy, int r) 
+        { brush::circle, [](int dx, int dy, float r) 
             {return dx*dx + dy*dy < r*r;}},
-        { brush::square, [](int dx, int dy, int r) 
+        { brush::square, [](int dx, int dy, float r) 
             {return true;}}
     };
 };
