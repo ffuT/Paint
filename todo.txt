@@ -50,6 +50,8 @@ cycle colors with TAB
 
 Still TODO:
 
+handle alpha blending
+
 lua stuff
 custom brushtypes via scripting
 saving custom settings/remember last used sizes

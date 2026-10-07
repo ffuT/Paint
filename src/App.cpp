@@ -5,24 +5,22 @@
 #include "Utils.h"
 
 #include <GLFW/glfw3.h>
-#include <algorithm>
-#include <cstdint>
-#include <filesystem>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
 #include <lua.hpp>
 
+#include <filesystem>
+#include <cstdint>
 #include <cstdio>
 #include <math.h>
 
-// void framebufferSizeCallback(GLFWwindow* window, int w, int h) {
-//     App* app = (App*) glfwGetWindowUserPointer(window);
-//     if(!app) return;
-//     app->m_canvas.newPixelBuffer(w, h, (app->m_clearAlpha & Color::noBG : Color::White));
-//     glViewport(0, 0, w, h);
-//     printf("resized canvas to %dx%d \n", w, h);
-// }
+constexpr ImGuiWindowFlags imGuiFlags = ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoResize   |
+        ImGuiWindowFlags_NoMove     |
+        ImGuiWindowFlags_NoScrollbar|
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoBringToFrontOnFocus;
 
 void windowResizeCallback(GLFWwindow* window, int w, int h){
     App* app = (App*) glfwGetWindowUserPointer(window);
@@ -58,13 +56,7 @@ void keyPressCallback(GLFWwindow* window, int key, int scancode, int action, int
     app->setKey(key, action);
 }
 
-App::App() : 
-m_flags(ImGuiWindowFlags_NoTitleBar |
-        ImGuiWindowFlags_NoResize   |
-        ImGuiWindowFlags_NoMove     |
-        ImGuiWindowFlags_NoScrollbar|
-        ImGuiWindowFlags_NoCollapse |
-        ImGuiWindowFlags_NoBringToFrontOnFocus) {
+App::App() {
     m_scale.x = 1.0f;
     m_scale.y = 1.0f;
     printf("Creating App!\n");
@@ -235,7 +227,6 @@ bool App::initialize(int argc, char* argv[]){
     }
     
     glfwMakeContextCurrent(m_window);
-
     glfwSetWindowTitle(m_window, "Paint");
     
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -248,7 +239,6 @@ bool App::initialize(int argc, char* argv[]){
     updateViewport();
     
     //callbacks
-    //glfwSetFramebufferSizeCallback(m_window, framebufferSizeCallback); // disable to lock canvas
     glfwSetWindowUserPointer(m_window, this);
     glfwSetCursorPosCallback(m_window, cursorMoveCallback);
     glfwSetWindowSizeCallback(m_window, windowResizeCallback);
@@ -349,7 +339,7 @@ void App::renderUI(){
     ImGui::SetNextWindowPos(ImVec2(0,0), ImGuiCond_Always);
     ImGui::SetNextWindowSize(ImVec2(m_width, 140), ImGuiCond_Always);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    ImGui::Begin("stuff", nullptr, m_flags);
+    ImGui::Begin("stuff", nullptr, imGuiFlags);
     ImGui::PopStyleVar();
     {
         // tool select
@@ -445,7 +435,7 @@ void App::renderUI(){
         ImGui::SetNextWindowSize(ImVec2(m_width+10, 30), ImGuiCond_Always);
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        ImGui::Begin("info", nullptr, m_flags);
+        ImGui::Begin("info", nullptr, imGuiFlags);
         ImGui::PopStyleVar();
 
         ImGui::Text("(%d,%d)", (int) mouseToPixels().x, (int) mouseToPixels().y);

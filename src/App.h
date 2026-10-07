@@ -3,11 +3,11 @@
 #include <cstdint>
 #include <glad.h>
 #include <GLFW/glfw3.h>
+#include "imgui/imgui.h"
 
 #include "Canvas.h"
 #include "Brush.h"
 #include "Renderer.h"
-#include "imgui/imgui.h"
 
 class App{
     public:
@@ -78,5 +78,4 @@ class App{
     int m_fbwidth, m_fbheight; // raw window pix size
     vec2f m_scale;
     GLFWwindow* m_window;
-    const ImGuiWindowFlags m_flags;
 };
