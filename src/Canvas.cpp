@@ -71,15 +71,15 @@ void Canvas::draw(vec2f c, vec2f cprev, Brush& brush){
     bool changed = false;
     if(brush.isOnTool()){
         changed |= brush.useTool(pixels, c.x, c.y, m_canvasWidth, m_canvasHeight);
-        return;
-    }
-    // simple interp between prevc and currentc
-    float dx = c.x - cprev.x, dy = c.y - cprev.y;
-    float dist = std::sqrt(dx*dx+dy*dy);
-    int steps = std::max(1, (int)std::ceil(dist));
-    for (int i = 0; i <= steps; i++) {
-        float t = (float) i/steps;
-        changed |= brush.stamp(pixels, cprev.x + t * dx, cprev.y + t *dy, m_canvasWidth, m_canvasHeight);
+    } else {
+        // simple interp between prevc and currentc
+        float dx = c.x - cprev.x, dy = c.y - cprev.y;
+        float dist = std::sqrt(dx*dx+dy*dy);
+        int steps = std::max(1, (int)std::ceil(dist));
+        for (int i = 0; i <= steps; i++) {
+            float t = (float) i/steps;
+            changed |= brush.stamp(pixels, cprev.x + t * dx, cprev.y + t *dy, m_canvasWidth, m_canvasHeight);
+        }
     }
     m_dirtyBuffer |= changed;
     m_dirty |= changed;

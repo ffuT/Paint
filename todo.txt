@@ -40,6 +40,8 @@ simplified snapshots internal code
 
 Still TODO:
 
+draw preview (in shader with uniforms)
+
 lua stuff
 custom brushtypes via scripting
 saving custom settings/remember last used sizes

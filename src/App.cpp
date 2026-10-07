@@ -266,6 +266,10 @@ void App::updateScroll(double xoffset, double yoffset){
         // not perfect but its ok
         m_canvasOffsetWidth -= ((double) CW/2) * (m_zoom - oldzoom);
         m_canvasOffsetHeight -= ((double) m_canvas.getHeight()/2) * (m_zoom - oldzoom);
+    } else if (m_SHIFTDown) { // scale brush radius
+        double currentRadius = m_brush.getRadius();
+        currentRadius *= (1.0f + yoffset * 0.1f);
+        m_brush.setRadius(currentRadius);
     } else { // panning on scroll if not pressing CTRL
         m_canvasOffsetWidth += xoffset * m_panStrength;
         m_canvasOffsetHeight -= yoffset * m_panStrength;
@@ -301,7 +305,10 @@ void App::render(){
         .offset = {m_canvasOffsetWidth,m_canvasOffsetHeight},
         .zoom = m_zoom,
         .resolution = {(float) m_fbwidth, (float) m_fbheight},
-        .canvasRes = {(float) m_canvas.getWidth(), (float) m_canvas.getHeight() }
+        .canvasRes = {(float) m_canvas.getWidth(), (float) m_canvas.getHeight(), },
+        .mousePos = mouseToPixels(),
+        .brushRadius = m_brush.getRadius(),
+        .useTool = m_brush.isOnTool()
     });
 }
 

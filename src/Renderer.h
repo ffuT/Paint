@@ -8,6 +8,9 @@ struct renderParams{
     float zoom;
     vec2f resolution;
     vec2f canvasRes;
+    vec2f mousePos;
+    float brushRadius;
+    bool useTool;
 };
 
 class Renderer{
@@ -30,4 +33,6 @@ GLint m_canvasheightOffset;
 GLint m_zoomOffset;
 GLint m_offsetOffset;
 GLint m_resolutionOffset;
+GLint m_mousePos;
+GLint m_brushR;
 };

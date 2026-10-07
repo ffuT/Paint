@@ -29,6 +29,12 @@ void Renderer::render(const renderParams& params){
     glUniform2f(m_offsetOffset, params.offset.x, params.offset.y);
     glUniform2f(m_resolutionOffset, params.resolution.x, params.resolution.y);
 
+    if(!params.useTool)
+        glUniform1f(m_brushR, params.brushRadius);
+    else
+        glUniform1f(m_brushR, 0);
+    glUniform2f(m_mousePos, params.mousePos.x, params.mousePos.y);
+
     glBindVertexArray(m_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
@@ -88,6 +94,9 @@ void Renderer::createShader(){
         uniform float u_zoom;
         uniform vec2 u_offset;
         uniform vec2 u_resolution;
+        uniform vec2 u_mousePos;
+        uniform float u_brushRadius;
+        uniform vec3 u_brushColor;
         in vec2 vUV;
         out vec4 color;
         
@@ -105,6 +114,15 @@ void Renderer::createShader(){
             vec2 uv = canvaspix / vec2(u_canvasWidth, u_canvasHeight);
             vec4 texcol = texture(tex, uv);
             color = mix(vec4(checkcol, 1.0), texcol, texcol.a);
+            
+            vec2 dist = (canvaspix - u_mousePos);
+            float len2 = dist.x*dist.x + dist.y*dist.y;
+            float rad2 = u_brushRadius * u_brushRadius;
+            float previewWidth = 2*u_brushRadius/u_zoom;
+            if(len2 - rad2 < 1.0 && len2 - (rad2 - previewWidth) > 1.0){
+                color = vec4(0.0);
+            }
+            
         }
     )";
 
@@ -129,4 +147,6 @@ void Renderer::createShader(){
     m_zoomOffset = glGetUniformLocation(m_shader, "u_zoom");
     m_offsetOffset = glGetUniformLocation(m_shader, "u_offset");
     m_resolutionOffset = glGetUniformLocation(m_shader, "u_resolution");
+    m_mousePos = glGetUniformLocation(m_shader, "u_mousePos");
+    m_brushR = glGetUniformLocation(m_shader, "u_brushRadius");
 }

@@ -10,7 +10,7 @@ I created this app to make a lightweight drawing tool for quick simple drawings.
 - Simple brushes for drawing (circle and square, switch with `R`)
 - Fill tool (toggle with `B`)
 - Basic ImGui color selection with preset colors
-- Brush size slider
+- Brush size slider with `SHIFT` + scroll or GUI
 - Undo/Redo with `CTRL` `Z` and `Y`
 - New canvas with `CTRL` `N`
 - Clear canvas with `CTRL` `C`

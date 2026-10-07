@@ -16,7 +16,7 @@ bool Brush::stamp(uint32_t* pixels, int cx, int cy, int w, int h) const{
             int dx = (x - cx);
             int dy = (y - cy);
             bool fill = brushmap.at(m_currentBrush)(dx, dy, r);
-            if(fill){
+            if(fill && pixels[y * w + x] != m_currentColor){
                 pixels[y * w + x] = m_currentColor;
                 change = true;
             }
@@ -37,7 +37,6 @@ bool Brush::useTool(uint32_t* pixels, int cx, int cy, int w, int h){
     bool change = false;
     if(cx < 0 || cx >= w || cy < 0 || cy >= h)
         return change; // exit if outside canvas
-    uint32_t col = pixels[cy*w+cx];
     switch(m_currentTool){
         case tool::fill:
             m_fillcolor = pixels[cy*w+cx];
@@ -63,7 +62,7 @@ bool Brush::floodFill(uint32_t* pixels, int cx, int cy, int w, int h){
         unsigned int col = pixels[y*w + x];
         if(col == m_currentColor || col != m_fillcolor)
             continue;
-        change = true;
+        change |= true;
         pixels[y*w + x] = m_currentColor;
         stack.push({x+1,y});
         stack.push({x-1,y});
