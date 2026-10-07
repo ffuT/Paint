@@ -12,7 +12,7 @@ new canvas with ctrl n
 
 09-06-26
 
-visable alpha
+visible alpha
 
 more preset colors
 
@@ -38,9 +38,16 @@ fill tool
 
 simplified snapshots internal code
 
-Still TODO:
+06-07-26
+
+cleanup + bug fixes
+
+07-10-26
 
 draw preview (in shader with uniforms)
+
+
+Still TODO:
 
 lua stuff
 custom brushtypes via scripting
@@ -49,7 +56,6 @@ saving custom settings/remember last used sizes
 more brushtypes
 
 optimize savestate snapshots (diffs only)
-fix redo maxdepth after undo
 
 copy paste (select tool)
 
@@ -58,4 +64,3 @@ resize window (without clearing it)
 better curving on draw
 
 saving and opening files
-
