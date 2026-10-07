@@ -46,6 +46,7 @@ cleanup + bug fixes
 
 draw preview (in shader with uniforms)
 
+cycle colors with TAB
 
 Still TODO:
 

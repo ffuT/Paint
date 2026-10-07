@@ -5,6 +5,7 @@
 #include "Utils.h"
 
 #include <GLFW/glfw3.h>
+#include <algorithm>
 #include <cstdint>
 #include <filesystem>
 #include <imgui/imgui.h>
@@ -109,6 +110,19 @@ void App::setKey(int key, int action){ // action: click = 1, release = 0
             case GLFW_KEY_B:
                 m_brush.isOnTool() ? m_brush.setTool(tool::NONE) : m_brush.setTool(tool::fill); 
             break;
+            case GLFW_KEY_TAB:
+                int size = m_customColors.size();
+                if(m_SHIFTDown){
+                    m_currentColor--;
+                    m_currentColor = m_currentColor > size ? size-1 : m_currentColor;
+                } else {
+                    m_currentColor++;
+                    printf("%d ",m_currentColor);
+                    m_currentColor %= size;
+                    printf("%d \n",m_currentColor);
+                }
+                m_brush.setColor(m_customColors[m_currentColor]);
+            break;
         }
     }
 }
@@ -198,6 +212,13 @@ void App::loadLuaconf(const char* path){
 bool App::initialize(int argc, char* argv[]){
     printf("Initializing App!\n");
     
+    // load preset colors before lua
+    m_customColors.push_back(Color::Black);
+    m_customColors.push_back(Color::White);
+    m_customColors.push_back(Color::Red);
+    m_customColors.push_back(Color::Green);
+    m_customColors.push_back(Color::Blue);
+
     // get path to load config correctly
     std::filesystem::path dir = std::filesystem::canonical(argv[0]).parent_path();
     std::filesystem::path confpath = (dir / "../../config/config.lua");
@@ -269,6 +290,7 @@ void App::updateScroll(double xoffset, double yoffset){
     } else if (m_SHIFTDown) { // scale brush radius
         double currentRadius = m_brush.getRadius();
         currentRadius *= (1.0f + yoffset * 0.1f);
+        if(currentRadius <= 1) currentRadius = 1.0;
         m_brush.setRadius(currentRadius);
     } else { // panning on scroll if not pressing CTRL
         m_canvasOffsetWidth += xoffset * m_panStrength;
@@ -345,34 +367,42 @@ void App::renderUI(){
             ImGui::SetTooltip("sets current tool to \"fill\"");
 
         // color picker
-        static ImVec4 col = ImGui::ColorConvertU32ToFloat4(m_brush.getColor());
-        ImGui::Text("Color picker");
+        ImVec4 col = ImGui::ColorConvertU32ToFloat4(m_brush.getColor());
+        ImGui::Text("current Color");
         ImGui::SameLine();
-        ImGui::ColorEdit4("##color picker", (float*) &col, ImGuiColorEditFlags_NoInputs);
-
-        ImGui::SameLine();
-        ImGui::Text(" ");
-        ImGui::SameLine();
-        if(ImGui::ColorButton("##color1", ImGui::ColorConvertU32ToFloat4(Color::Black)))
-            col = ImGui::ColorConvertU32ToFloat4(Color::Black);
-        ImGui::SameLine();
-        if(ImGui::ColorButton("##color2", ImGui::ColorConvertU32ToFloat4(Color::Red)))
-            col = ImGui::ColorConvertU32ToFloat4(Color::Red);
-        ImGui::SameLine();
-        if(ImGui::ColorButton("##color3", ImGui::ColorConvertU32ToFloat4(Color::Blue)))
-            col = ImGui::ColorConvertU32ToFloat4(Color::Blue);
-        ImGui::SameLine();
-        if(ImGui::ColorButton("##color4", ImGui::ColorConvertU32ToFloat4(Color::Green)))
-            col = ImGui::ColorConvertU32ToFloat4(Color::Green);
+        ImGui::ColorButton("##selectedcolor", col, ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop);
+        
+        int ColorsPixelOffset = 180;
+        ImGui::SameLine(ColorsPixelOffset);
         for(uint32_t i : m_customColors){
-            ImGui::SameLine();
             ImGui::PushID(i);
             if(ImGui::ColorButton("##colorx", ImGui::ColorConvertU32ToFloat4(i)))
                 col = ImGui::ColorConvertU32ToFloat4(i);
             ImGui::PopID();
+            ImGui::SameLine();
         }
-
-        m_brush.setColor(ImGui::ColorConvertFloat4ToU32(col));
+        ImGui::Text("");
+        ImGui::Text("");
+        ImGui::SameLine(ColorsPixelOffset);
+        if(ImGui::Button("custom color")){
+            ImGui::OpenPopup("Color Picker");
+        }
+        if(ImGui::BeginPopupModal("Color Picker")){
+            static ImVec4 coll = ImGui::ColorConvertU32ToFloat4(m_brush.getColor());
+            ImGui::ColorPicker4("##new color", (float*)&coll);
+            ImGui::NewLine();
+            float popupW = ImGui::GetContentRegionAvail().x * 0.48;
+            if(ImGui::Button("save", ImVec2(popupW,0))){
+                m_customColors.push_back(ImGui::ColorConvertFloat4ToU32(coll));
+                m_currentColor = m_customColors.size() -1;
+                m_brush.setColor(m_customColors[m_currentColor]);
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if(ImGui::Button("cancel", ImVec2(popupW,0)))
+                ImGui::CloseCurrentPopup();
+            ImGui::EndPopup();    
+        }
 
         // radius picker
         float radius = m_brush.getRadius();

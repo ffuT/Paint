@@ -67,6 +67,7 @@ class App{
     
     // config var
     std::vector<uint32_t> m_customColors;
+    uint16_t m_currentColor = 0;
     bool m_clearAlpha = false;
     float m_MaxZoom = 10;
     double m_panStrength = 33.0;
