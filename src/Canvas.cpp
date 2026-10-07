@@ -106,4 +106,6 @@ void Canvas::newPixelBuffer(int w, int h, const uint32_t clearColor){
     }
     currentSnapshot = -1;
     saveSnapshot();
+    m_dirty = true;
+    m_dirtyBuffer = true;
 }
