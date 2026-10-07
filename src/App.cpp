@@ -117,9 +117,7 @@ void App::setKey(int key, int action){ // action: click = 1, release = 0
                     m_currentColor = m_currentColor > size ? size-1 : m_currentColor;
                 } else {
                     m_currentColor++;
-                    printf("%d ",m_currentColor);
                     m_currentColor %= size;
-                    printf("%d \n",m_currentColor);
                 }
                 m_brush.setColor(m_customColors[m_currentColor]);
             break;
