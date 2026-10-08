@@ -11,6 +11,9 @@ AlphaAsClear = false
 MaxZoom = 20.0
 StartZoom = 0.8
 
+-- system
+SavePath = "/home/tuff/Pictures/" -- needs full path
+
 --custom colors
 Colors = {
     -- name doesnt matter

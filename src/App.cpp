@@ -3,7 +3,10 @@
 #include "Canvas.h"
 #include "Renderer.h"
 #include "Utils.h"
+#include "lauxlib.h"
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
 #include <GLFW/glfw3.h>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
@@ -100,6 +103,9 @@ void App::setKey(int key, int action){ // action: click = 1, release = 0
             case GLFW_KEY_B:
                 m_brush.isOnTool() ? m_brush.setTool(tool::NONE) : m_brush.setTool(tool::fill); 
             break;
+            case GLFW_KEY_S:
+                if(m_CTRLDown) m_openSaveImgPopup = true;
+            break;
             case GLFW_KEY_TAB:
                 int size = m_customColors.size();
                 if(m_SHIFTDown){
@@ -179,7 +185,7 @@ void App::start(){
 
 void App::loadLuaconf(const char* path){
     lua_State* L = loadconfig(path);
-
+    loadstring(L, "SavePath", m_imgPath);
     loadint(L, "Width", m_width);
     loadint(L, "Height", m_height);
     loadbool(L, "AlphaAsClear", m_clearAlpha);
@@ -395,6 +401,27 @@ void App::renderUI(){
         ImGui::SetNextItemWidth(200);
         ImGui::SliderFloat("brush size", &radius, 1.0f, 50.0f, "%.1f");
         m_brush.setRadius(radius);
+    }
+
+    if(m_openSaveImgPopup)
+        ImGui::OpenPopup("Save Image");
+    if(ImGui::BeginPopupModal("Save Image")){
+        static char chars[128] = "unnamed.png";
+        ImGui::InputText("save as", chars, sizeof(chars));
+        if(ImGui::Button("Save") || m_enterDown){
+            int w = m_canvas.getWidth();
+            std::string writePath = m_imgPath + chars;
+            printf("%s\n", writePath.c_str());
+            stbi_write_png(writePath.c_str(), w, m_canvas.getHeight(), 4, m_canvas.getPixels(), w * 4);
+            ImGui::CloseCurrentPopup();
+            m_openSaveImgPopup = false;
+        }
+        ImGui::SameLine();       
+        if(ImGui::Button("Cancel") || m_EscDown){
+            ImGui::CloseCurrentPopup();
+            m_openSaveImgPopup = false;
+        }
+        ImGui::EndPopup();
     }
 
     if(m_openCanvasPopup)

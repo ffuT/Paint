@@ -8,6 +8,8 @@
 #include "Brush.h"
 #include "Renderer.h"
 
+#include <string>
+
 class App{
     public:
     App();
@@ -50,6 +52,7 @@ class App{
     bool m_mouseLeftDown = false;
     bool m_mouseRightDown = false;
     bool m_openCanvasPopup = false;
+    bool m_openSaveImgPopup = false;
     bool m_ImGuiCaptureMouse = false;
     vec2f m_mouse;
     vec2f m_dragStart;
@@ -67,6 +70,7 @@ class App{
     bool m_clearAlpha = false;
     float m_MaxZoom = 10;
     double m_panStrength = 33.0;
+    std::string m_imgPath = "bin/"; // default
     
     // window + GL
     Renderer m_renderer;

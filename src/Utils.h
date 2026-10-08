@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <lua.hpp>
 #include <vector>
+#include <string>
 
 struct vec2f{
     float x;
@@ -87,4 +88,12 @@ inline void loadbool(lua_State* L, const char* var_name, bool& var){
     if(!lua_isboolean(L, -1))
         luaerror(L, "variable is not a number: %s\n", var_name);
     var = lua_toboolean(L, -1);
+}
+
+inline void loadstring(lua_State* L, const char* var_name, std::string& var){
+    if(isnil(L, var_name))
+        return;
+    if(!lua_isstring(L, -1))
+        luaerror(L, "variable is not a string: %s\n", var_name);
+    var = std::string(lua_tostring(L, -1));
 }
