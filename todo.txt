@@ -48,7 +48,15 @@ draw preview (in shader with uniforms)
 
 cycle colors with TAB
 
+
+08-10-26
+
+save images
+
+
 Still TODO:
+
+saving of multiple filetypes
 
 handle alpha blending
 
@@ -66,4 +74,4 @@ resize window (without clearing it)
 
 better curving on draw
 
-saving and opening files
+opening files

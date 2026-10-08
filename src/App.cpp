@@ -366,10 +366,12 @@ void App::renderUI(){
         
         int ColorsPixelOffset = 180;
         ImGui::SameLine(ColorsPixelOffset);
-        for(uint32_t i : m_customColors){
+        for(int i = 0; i < m_customColors.size(); i++){
             ImGui::PushID(i);
-            if(ImGui::ColorButton("##colorx", ImGui::ColorConvertU32ToFloat4(i)))
-                col = ImGui::ColorConvertU32ToFloat4(i);
+            if(ImGui::ColorButton("##colorx", ImGui::ColorConvertU32ToFloat4(m_customColors[i]))){
+                m_currentColor = i;
+                m_brush.setColor(m_customColors[i]);
+            }
             ImGui::PopID();
             ImGui::SameLine();
         }
