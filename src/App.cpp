@@ -3,7 +3,6 @@
 #include "Canvas.h"
 #include "Renderer.h"
 #include "Utils.h"
-#include "lauxlib.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
@@ -14,9 +13,10 @@
 #include <lua.hpp>
 
 #include <filesystem>
-#include <cstdint>
 #include <cstdio>
 #include <math.h>
+
+constexpr std::array<const char*,2> SupportedFileTypes = {".png",".jpg"};
 
 constexpr ImGuiWindowFlags imGuiFlags = ImGuiWindowFlags_NoTitleBar |
         ImGuiWindowFlags_NoResize   |
@@ -408,13 +408,35 @@ void App::renderUI(){
     if(m_openSaveImgPopup)
         ImGui::OpenPopup("Save Image");
     if(ImGui::BeginPopupModal("Save Image")){
-        static char chars[128] = "unnamed.png";
+        static char chars[48] = "unnamed";
+        ImGui::SetNextItemWidth(120);
         ImGui::InputText("save as", chars, sizeof(chars));
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(80);
+        static int fileTypeIdx = 0;
+        if(ImGui::BeginCombo("##filetype", SupportedFileTypes[fileTypeIdx])){
+            for(int i = 0 ; i < SupportedFileTypes.size(); i++){
+                bool selected = false;
+                if(ImGui::Selectable(SupportedFileTypes[i], &selected))
+                    fileTypeIdx = i;                
+                if(selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+        
         if(ImGui::Button("Save") || m_enterDown){
             int w = m_canvas.getWidth();
-            std::string writePath = m_imgPath + chars;
+            std::string writePath = m_imgPath + chars + SupportedFileTypes[fileTypeIdx];
             printf("%s\n", writePath.c_str());
-            stbi_write_png(writePath.c_str(), w, m_canvas.getHeight(), 4, m_canvas.getPixels(), w * 4);
+            switch (fileTypeIdx) {
+                case 0: // png 
+                stbi_write_png(writePath.c_str(), w, m_canvas.getHeight(), 4, m_canvas.getPixels(), w * 4);
+                break;
+                case 1: // jpg
+                stbi_write_jpg(writePath.c_str(), w, m_canvas.getHeight(), 4, m_canvas.getPixels(), w * 4);
+                break;
+            }
             ImGui::CloseCurrentPopup();
             m_openSaveImgPopup = false;
         }
