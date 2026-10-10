@@ -3,6 +3,7 @@
 #include "math.h"
 #include <cstdint>
 #include <cstring>
+#include <algorithm>
 
 Canvas::Canvas(unsigned int w, unsigned int h) :
     m_canvasWidth(w), m_canvasHeight(h),
@@ -92,11 +93,21 @@ void Canvas::newPixelBuffer(int w, int h, const uint32_t clearColor){
         return;
     }
 
-    delete[] pixels;
-    pixels = new uint32_t[w * h];
+    uint32_t* temp = new uint32_t[w * h];
     for(int i = 0; i < w * h; i++){
-        pixels[i] = clearColor;
+        temp[i] = clearColor;
     }
+    // copy only onto/from smallest canvas
+    uint32_t wMin = std::min((uint32_t) w, m_canvasWidth); 
+    uint32_t hMin = std::min((uint32_t) h, m_canvasHeight);
+    for(int x = 0; x < wMin; x++){
+        for(int y = 0; y < hMin; y++){
+            temp[x+y*w] = pixels[x+y*m_canvasWidth];
+        }
+    }
+    delete[] pixels;
+    pixels = temp;
+
     m_canvasWidth = w;
     m_canvasHeight = h;
     

@@ -53,10 +53,14 @@ cycle colors with TAB
 
 save images
 
-
-Still TODO:
+10-10-26
 
 saving of multiple filetypes
+
+resize without full clear canvas
+
+
+Still TODO:
 
 handle alpha blending
 
@@ -70,7 +74,7 @@ optimize savestate snapshots (diffs only)
 
 copy paste (select tool)
 
-resize window (without clearing it)
+drag canvas corners to resize
 
 better curving on draw
 
